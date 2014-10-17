@@ -8,6 +8,8 @@ import java.util.List;
  */
 public class Manager extends Thread{
 	private List<Thread> employees;
+	private final int day = 4800; //milliseconds
+	private final int minute = 10; //milliseconds
 	
 	/**
 	 * accumulate statistics on the total amount of time across the manager
@@ -25,6 +27,26 @@ public class Manager extends Thread{
 	
 	public void addEmployee(Employee e) {
 		employees.add(e);
+	}
+	
+	public int totalTimeWorking() {
+		return 0;
+		
+	}
+	
+	public int totalTimeLunch() {
+		return 0;
+		
+	}
+	
+	public int totalTimeMeetings() {
+		return 0;
+		
+	}
+	
+	public int totalTimeWaiting() {
+		return 0;
+		
 	}
 
 }
