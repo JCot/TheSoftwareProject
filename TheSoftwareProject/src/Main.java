@@ -4,11 +4,14 @@
  *
  */
 public class Main {
-	private final int day = 4800; //milliseconds
-	private final int minute = 10; //milliseconds
+	private final static int day = 5400; //milliseconds, (9 hour work day)
+	private final static int minute = 10; //milliseconds
 
 	public static void main(String[] args) {
 		Manager bob = new Manager("Bob");
+		
+		Clock clock = new Clock();
+		Thread timer = new Thread(new Timer(minute,day,clock));
 		
 		//Developer NM, where N is the team number (1-3)
 		//and M is the employee's number on the team (1-4,
@@ -20,9 +23,6 @@ public class Main {
 			}
 		}
 		
-		
-		
-
+		//TBD
 	}
-
 }
