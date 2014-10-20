@@ -27,15 +27,15 @@ public class Clock {
 		
 		//Stores hour and am/pm
 		actualHours.put(0, "8,am");
-		actualHours.put(1, "9,am");
-		actualHours.put(2, "10,am");
-		actualHours.put(3, "11,am");
-		actualHours.put(4, "12,pm");
-		actualHours.put(5, "1,pm");
-		actualHours.put(6, "2,pm");
-		actualHours.put(7, "3,pm");
-		actualHours.put(8, "4,pm");
-		actualHours.put(9, "5,pm");
+		actualHours.put(60, "9,am");
+		actualHours.put(120, "10,am");
+		actualHours.put(180, "11,am");
+		actualHours.put(240, "12,pm");
+		actualHours.put(300, "1,pm");
+		actualHours.put(360, "2,pm");
+		actualHours.put(420, "3,pm");
+		actualHours.put(480, "4,pm");
+		actualHours.put(540, "5,pm");
 	}
 	
 	/**

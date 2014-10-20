@@ -18,7 +18,7 @@ public class Main {
 		//where 1 is the team lead)
 		for (int i = 1; i <= 3; i++) {
 			for (int j = 1; j<=4; j++) {
-				Employee e = new Employee("Developer " + i + j, i);
+				Employee e = new Employee(Integer.toString(j), Integer.toString(i), 0, clock);
 				bob.addEmployee(e);
 			}
 		}
