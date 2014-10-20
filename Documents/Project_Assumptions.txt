@@ -1,0 +1,11 @@
+This is the list of assumptions that we are making for the implementation
+of the software project day.
+-------------------------------------------------------------------------------
+
+- An employee asking a question is still considered to be working (unless they
+    are waiting for the project manager)
+- Everyone is finished with lunch by 4pm.
+- Assume parameters can be used for arrival and lunch times
+  - Default is a random times for arrival time, lunch start
+    and lunch length (between 30 - 60 minutes though) 
+  - End time can be determined with these parameters
