@@ -1,3 +1,5 @@
+import java.util.concurrent.CountDownLatch;
+
 /**
  * Timer is a runnable object that will make the clock SMR
  * tick for each minute.
@@ -16,6 +18,9 @@ public class Timer implements Runnable {
 	/** A reference to the clock object */
 	private Clock clock;
 	
+	private CountDownLatch start;
+	
+	
 	/**
 	 * Constructor for a Timer object.
 	 * 
@@ -25,10 +30,11 @@ public class Timer implements Runnable {
 	 *                       day (in ms)
 	 * @param clock - Reference to the clock SMR
 	 */
-	public Timer(int simulatedMinute, int simulatedDay, Clock clock) {
+	public Timer(int simulatedMinute, int simulatedDay, Clock clock, CountDownLatch latch) {
 		this.simulatedMinute = simulatedMinute;
 		this.simulatedDay = simulatedDay;
 		this.clock = clock;
+		this.start = latch;
 	}
 	
 	/**
@@ -38,6 +44,12 @@ public class Timer implements Runnable {
 	 */
 	@Override
 	public void run() {
+		start.countDown();
+		try {
+			start.await();
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
 		
 		//Determines the the amount of times to loop
 		//since each iteration represents one minute of simulated time

@@ -54,6 +54,10 @@ public class Clock {
 	 */
 	public synchronized void incrementClock() {
 		clock++;
+		
+		//Notify all objects waiting on the clock's monitor 
+		//that one minute has passed
+		this.notifyAll();
 	}
 	
 	/**
