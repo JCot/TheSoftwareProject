@@ -10,6 +10,7 @@ public class Employee extends Thread{
 	protected String team;
 	protected String devNumber;
 	protected String name;
+	protected String teamLead;
 	protected int arrivalTime;
 	protected int lunchEndTime;
 	protected int timeAtLunch;
@@ -23,6 +24,7 @@ public class Employee extends Thread{
 		super(name);
 		this.devNumber = devNumber;
 		this.team = teamNumber;
+		this.teamLead = "Developer " + team + "1";
 		this.arrivalTime = rand.nextInt(30);
 		this.lunchEndTime = rand.nextInt(480 - 240) + 240;
 		this.timeAtLunch = rand.nextInt(30 - this.arrivalTime) + 30;
@@ -33,7 +35,7 @@ public class Employee extends Thread{
 	//Ask team lead a question
 	public void askQuestion(){
 		System.out.println(clock.getFormattedClock() + name + " asks team lead a question");
-		//lead.answerQuestion();
+		
 	}
 	
 	public void goToLunch(){
