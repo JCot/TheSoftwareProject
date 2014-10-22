@@ -7,6 +7,7 @@ of the software project day.
     asking a question or waiting for one to be answered.
 - Everyone is finished with lunch by 4pm.
 - Assume parameters can be used for arrival and lunch times
-  - Default is a random times for arrival time, lunch start
-    and lunch length (between 30 - 60 minutes though) 
-  - End time can be determined with these parameters
+  - Default is a random time for arrival time (between 8 and 8:30am), 
+    lunch end time (between 12pm and 4pm)
+    and lunch length (between 30 - 60 minutes)
+  - The lunch start time and end of workday time can be determined with these parameters

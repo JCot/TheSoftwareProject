@@ -1,12 +1,13 @@
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 
 
 public class TeamLead extends Employee {
-	private ArrayList<Employee> teamMembers;
+	private ArrayList<Employee> teamMembers;//May not be needed
 	
-	public TeamLead(String name, String devNumber, String teamNumber, Clock clock){
-		super(name, devNumber, teamNumber, clock);
+	public TeamLead(String name, String devNumber, String teamNumber, Clock clock, CountDownLatch start){
+		super(name, devNumber, teamNumber, clock, start);
 		teamMembers = new ArrayList<Employee>();
 	}
 	
@@ -41,6 +42,11 @@ public class TeamLead extends Employee {
 			available.acquire();
 		}
 		catch(InterruptedException e){}
+	}
+	
+	@Override
+	public void workday(){
+		this.arrive();
 	}
 
 }

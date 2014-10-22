@@ -1,4 +1,5 @@
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -6,7 +7,7 @@ import java.util.concurrent.Semaphore;
  * @author Shannon
  *
  */
-public class Employee extends Thread{
+public class Employee extends Worker{
 	protected String team;
 	protected String devNumber;
 	protected String name;
@@ -15,13 +16,9 @@ public class Employee extends Thread{
 	protected int lunchEndTime;
 	protected int timeAtLunch;
 	protected Clock clock;
-	protected Random rand = new Random();
 	
-	protected static final int NUM_CONFERENCE_ROOMS = 1;
-	protected static final Semaphore available = new Semaphore(NUM_CONFERENCE_ROOMS, true);
-	
-	public Employee (String name, String devNumber, String teamNumber, Clock clock) {
-		super(name);
+	public Employee (String name, String devNumber, String teamNumber, Clock clock, CountDownLatch startLatch) {
+		super(name, clock, startLatch);
 		this.devNumber = devNumber;
 		this.team = teamNumber;
 		this.teamLead = "Developer " + team + "1";
@@ -35,15 +32,10 @@ public class Employee extends Thread{
 	//Ask team lead a question
 	public void askQuestion(){
 		System.out.println(clock.getFormattedClock() + name + " asks team lead a question");
-		
 	}
 	
 	public void goToLunch(){
 		System.out.println(clock.getFormattedClock() + name + " goes to lunch");
-	}
-	
-	public void arrive(){
-		System.out.println(clock.getFormattedClock() + name + " arrives at work");
 	}
 	
 	public void leave(){
@@ -60,7 +52,9 @@ public class Employee extends Thread{
 		System.out.println(clock.getFormattedClock() + name + " goes to team standup");
 	}
 	
-	public void run(){
-		
+	@Override
+	public void workday() {
+		//Start of day - employee arrives
+		this.arrive();
 	}
 }
