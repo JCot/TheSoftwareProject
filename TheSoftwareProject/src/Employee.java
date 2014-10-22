@@ -1,3 +1,4 @@
+import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -10,48 +11,54 @@ public class Employee extends Thread{
 	protected String devNumber;
 	protected String name;
 	protected int arrivalTime;
-	//protected TeamLead lead;
+	protected int lunchEndTime;
+	protected int timeAtLunch;
 	protected Clock clock;
+	protected Random rand = new Random();
 	
 	protected static final int NUM_CONFERENCE_ROOMS = 1;
 	protected static final Semaphore available = new Semaphore(NUM_CONFERENCE_ROOMS, true);
 	
-	public Employee (String devNumber, String teamNumber, int arrivalTime, Clock clock) {
-		super(devNumber);
+	public Employee (String name, String devNumber, String teamNumber, Clock clock) {
+		super(name);
 		this.devNumber = devNumber;
 		this.team = teamNumber;
-		this.arrivalTime = arrivalTime;
-		//this.lead = lead;
+		this.arrivalTime = rand.nextInt(30);
+		this.lunchEndTime = rand.nextInt(480 - 240) + 240;
+		this.timeAtLunch = rand.nextInt(30 - this.arrivalTime) + 30;
 		this.clock = clock;
-		this.name = "Developer " + this.team + this.devNumber;
+		this.name = name;
 	}
 	
 	//Ask team lead a question
 	public void askQuestion(){
-		System.out.println(clock.getFormattedClock() + " Developer" + team + devNumber + " asks team lead a question");
+		System.out.println(clock.getFormattedClock() + name + " asks team lead a question");
 		//lead.answerQuestion();
 	}
 	
 	public void goToLunch(){
-		System.out.println(clock.getFormattedClock() + " Developer" + team + devNumber + " goes to lunch");
+		System.out.println(clock.getFormattedClock() + name + " goes to lunch");
 	}
 	
 	public void arrive(){
-		System.out.println(clock.getFormattedClock() + " Developer" + team + devNumber + " arrives at work");
+		System.out.println(clock.getFormattedClock() + name + " arrives at work");
 	}
 	
 	public void leave(){
-		System.out.println(clock.getFormattedClock() + " Developer" + team + devNumber + " leaves work");
+		System.out.println(clock.getFormattedClock() + name + " leaves work");
 	}
 	
 	//Go to the end of the day status meeting
 	public void goToStatusMeeting(){
-		System.out.println(clock.getFormattedClock() + " Developer" + team + devNumber + " goes to daily status meeting");
+		System.out.println(clock.getFormattedClock() + name + " goes to daily status meeting");
 	}
 	
 	//Go to morning team stand-up meeting
 	public void goToStandUpMeeting(){
-		System.out.println(clock.getFormattedClock() + " Developer" + team + devNumber + " goes to team standup");
+		System.out.println(clock.getFormattedClock() + name + " goes to team standup");
 	}
-
+	
+	public void run(){
+		
+	}
 }

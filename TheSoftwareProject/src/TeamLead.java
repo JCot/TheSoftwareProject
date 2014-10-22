@@ -1,16 +1,17 @@
+import java.util.ArrayList;
 import java.util.Random;
 
 
 public class TeamLead extends Employee {
-	Random rand = new Random();
+	private ArrayList<Employee> teamMembers;
 	
-	public TeamLead(String devNumber, String teamNumber, int arrivalTime, Clock clock){
-		super(devNumber, teamNumber, arrivalTime, clock);
+	public TeamLead(String name, String devNumber, String teamNumber, Clock clock){
+		super(name, devNumber, teamNumber, clock);
+		teamMembers = new ArrayList<Employee>();
 	}
 	
 	//Try and answer a team members question
 	public void answerQuestion(){
-		//TODO change to be a 50/50 chance
 		boolean canAnswer = (rand.nextInt(1) == 1);
 		
 		if(canAnswer){
