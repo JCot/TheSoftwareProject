@@ -10,6 +10,7 @@ public class Employee extends Worker{
 	protected String devNumber;
 	protected String teamLead;
 	protected CountDownLatch teamStandUpLatch;
+	protected int timeWorked = 0;
 	
 	public Employee (String name, String devNumber, String teamNumber, Clock clock, CountDownLatch startLatch, CountDownLatch statusMeetingLatch, CountDownLatch teamStandUpLatch) {
 		super(name, clock, startLatch, statusMeetingLatch);
@@ -26,15 +27,18 @@ public class Employee extends Worker{
 	
 	//Ask team lead a question
 	public void askQuestion(){
-		System.out.println(clock.getFormattedClock() + name + " asks team lead a question");
+		System.out.println(clock.getFormattedClock() + " " + name + " asks team lead a question");
 	}
 	
 	//Go to morning team stand-up meeting
 	public void goToTeamStandUpMeeting(){
-		System.out.println(clock.getFormattedClock() + name + " goes to team standup");
+		timeWorked += clock.getClock() - arrivalTime;
+		System.out.println(clock.getFormattedClock() + " " + name + " goes to team standup");
 		this.teamStandUpLatch.countDown();
 		try{
 			this.teamStandUpLatch.await();
+			timeInMeetings += 15;
+			wait();
 		}
 		catch(InterruptedException e){
 			e.printStackTrace();
@@ -45,7 +49,12 @@ public class Employee extends Worker{
 	public void workday() {
 		//Start of day - employee arrives
 		this.arrive();
+		System.out.println(name + " works until team lead is finished with meeting with the manager");
 		this.goToTeamStandUpMeeting();
+	}
+	
+	public int getTimeWorked(){
+		return timeWorked;
 	}
 	
 //	Implemented in abstract method. No need to override (I think)

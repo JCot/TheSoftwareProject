@@ -12,9 +12,10 @@ public class Main {
 	private final static int minute = 10; //milliseconds
 	
 	public static void main(String[] args) {
-		//14 Total threads will run within this application
-		CountDownLatch startLatch = new CountDownLatch(14);
+		CountDownLatch startLatch = new CountDownLatch(1);
+		//The status meeting at the end of the day will involve all 13 employees
 		CountDownLatch statusMeetingLatch = new CountDownLatch(13);
+		//The meeting between the manager and the team leads will involve 5 people
 		CountDownLatch standUpLatch = new CountDownLatch(5);
 		Clock clock = new Clock();
 		List<Thread> employees = new ArrayList<Thread>();
@@ -29,7 +30,7 @@ public class Main {
 			CountDownLatch teamStandUpLatch = new CountDownLatch(4);
 			for (int j = 1; j<=4; j++) {
 				if(j == 1){
-					TeamLead l = new TeamLead("Developer " + i + j, Integer.toString(j), Integer.toString(i), clock, startLatch, statusMeetingLatch, teamStandUpLatch);
+					TeamLead l = new TeamLead("Developer " + i + j, Integer.toString(j), Integer.toString(i), clock, startLatch, statusMeetingLatch, teamStandUpLatch, standUpLatch);
 					employees.add(l);
 					bob.addEmployee(l);
 				}
@@ -46,6 +47,8 @@ public class Main {
 		for(Thread e : employees) {
 			e.start();
 		}
+		
+		startLatch.countDown();
 		
 		
 		

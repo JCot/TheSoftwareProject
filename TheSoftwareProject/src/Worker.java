@@ -13,6 +13,8 @@ public abstract class Worker extends Thread {
 	protected CountDownLatch statusMeetingLatch;
 	protected Random rand = new Random();
 	
+	protected int timeInMeetings = 0;
+	
 	protected static final int NUM_CONFERENCE_ROOMS = 1;
 	protected static final Semaphore available = new Semaphore(NUM_CONFERENCE_ROOMS, true);
 	
@@ -25,7 +27,7 @@ public abstract class Worker extends Thread {
 		
 	}
 	public void goToLunch(){
-		System.out.println(clock.getFormattedClock() + name + " goes to lunch");
+		System.out.println(clock.getFormattedClock() + " " + name + " goes to lunch");
 	}
 	
 	public void arrive(){
@@ -39,16 +41,16 @@ public abstract class Worker extends Thread {
 				}
 			}
 		}
-		System.out.println(clock.getFormattedClock() + " " + name + " arrives at work");
+		System.out.println(clock.getFormattedClock() + " " + " " + name + " arrives at work");
 	}
 	
 	public void leave(){
-		System.out.println(clock.getFormattedClock() + name + " leaves work");
+		System.out.println(clock.getFormattedClock() + " " + name + " leaves work");
 	}
 	
 	//Go to the end of the day status meeting
 	public void goToStatusMeeting(){
-		System.out.println(clock.getFormattedClock() + name + " goes to daily status meeting");
+		System.out.println(clock.getFormattedClock() + " " + name + " goes to daily status meeting");
 		
 		this.statusMeetingLatch.countDown();
 		try{
@@ -65,8 +67,6 @@ public abstract class Worker extends Thread {
 	public abstract void workday();
 	
 	public void run(){
-		//Wait for all the threads to start
-		this.startLatch.countDown();
 		try {
 			this.startLatch.await();
 		} catch (InterruptedException e) {
