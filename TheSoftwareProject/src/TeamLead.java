@@ -16,6 +16,7 @@ public class TeamLead extends Employee {
 		
 		if(canAnswer){
 			System.out.println(clock.getFormattedClock() + name + " answers a question");
+			
 			return;
 		}
 		

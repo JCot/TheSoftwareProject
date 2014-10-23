@@ -15,7 +15,7 @@ public class Main {
 		//14 Total threads will run within this application
 		CountDownLatch startLatch = new CountDownLatch(14);
 		CountDownLatch statusMeetingLatch = new CountDownLatch(13);
-		CountDownLatch standUpLatch = new CountDownLatch(5);
+		CountDownLatch standUpLatch = new CountDownLatch(5);  //this is just for the team leads and the manager
 		Clock clock = new Clock();
 		List<Thread> employees = new ArrayList<Thread>();
 		Thread timer = new Thread(new Timer(minute,day,clock,startLatch));

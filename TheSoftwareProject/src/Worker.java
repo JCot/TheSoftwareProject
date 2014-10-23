@@ -16,7 +16,13 @@ public abstract class Worker extends Thread {
 	protected static final int NUM_CONFERENCE_ROOMS = 1;
 	protected static final Semaphore available = new Semaphore(NUM_CONFERENCE_ROOMS, true);
 	
-	
+	/**
+	 * 
+	 * @param name
+	 * @param clock
+	 * @param startLatch
+	 * @param statusMeetingLatch
+	 */
 	public Worker(String name, Clock clock, CountDownLatch startLatch, CountDownLatch statusMeetingLatch){
 		this.name = name;
 		this.clock = clock;
@@ -24,6 +30,7 @@ public abstract class Worker extends Thread {
 		this.statusMeetingLatch = statusMeetingLatch;
 		
 	}
+	
 	public void goToLunch(){
 		System.out.println(clock.getFormattedClock() + name + " goes to lunch");
 	}
