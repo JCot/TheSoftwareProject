@@ -10,16 +10,18 @@ public abstract class Worker extends Thread {
 	protected int timeAtLunch;
 	protected Clock clock;
 	protected CountDownLatch startLatch;
+	protected CountDownLatch statusMeetingLatch;
 	protected Random rand = new Random();
 	
 	protected static final int NUM_CONFERENCE_ROOMS = 1;
 	protected static final Semaphore available = new Semaphore(NUM_CONFERENCE_ROOMS, true);
 	
 	
-	public Worker(String name, Clock clock, CountDownLatch startLatch){
+	public Worker(String name, Clock clock, CountDownLatch startLatch, CountDownLatch statusMeetingLatch){
 		this.name = name;
 		this.clock = clock;
 		this.startLatch = startLatch;
+		this.statusMeetingLatch = statusMeetingLatch;
 		
 	}
 	public void goToLunch(){
@@ -31,7 +33,7 @@ public abstract class Worker extends Thread {
 		synchronized(clock) {
 			while (clock.getClock() < this.arrivalTime) {
 				try {
-					clock.wait();
+					clock.wait(); //Should this just be wait()? So the Worker waits not the clock
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -47,6 +49,14 @@ public abstract class Worker extends Thread {
 	//Go to the end of the day status meeting
 	public void goToStatusMeeting(){
 		System.out.println(clock.getFormattedClock() + name + " goes to daily status meeting");
+		
+		this.statusMeetingLatch.countDown();
+		try{
+			this.statusMeetingLatch.await();
+		}
+		catch(InterruptedException e){
+			e.printStackTrace();
+		}
 	}
 	
 	/**

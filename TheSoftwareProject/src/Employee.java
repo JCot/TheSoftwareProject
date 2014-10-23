@@ -1,6 +1,4 @@
-import java.util.Random;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
 
 /**
  * 
@@ -10,15 +8,12 @@ import java.util.concurrent.Semaphore;
 public class Employee extends Worker{
 	protected String team;
 	protected String devNumber;
-	protected String name;
 	protected String teamLead;
-	protected int arrivalTime;
-	protected int lunchEndTime;
-	protected int timeAtLunch;
-	protected Clock clock;
+	protected CountDownLatch teamStandUpLatch;
 	
-	public Employee (String name, String devNumber, String teamNumber, Clock clock, CountDownLatch startLatch) {
-		super(name, clock, startLatch);
+	public Employee (String name, String devNumber, String teamNumber, Clock clock, CountDownLatch startLatch, CountDownLatch statusMeetingLatch, CountDownLatch teamStandUpLatch) {
+		super(name, clock, startLatch, statusMeetingLatch);
+		this.teamStandUpLatch = teamStandUpLatch;
 		this.devNumber = devNumber;
 		this.team = teamNumber;
 		this.teamLead = "Developer " + team + "1";
@@ -34,27 +29,36 @@ public class Employee extends Worker{
 		System.out.println(clock.getFormattedClock() + name + " asks team lead a question");
 	}
 	
-	public void goToLunch(){
-		System.out.println(clock.getFormattedClock() + name + " goes to lunch");
-	}
-	
-	public void leave(){
-		System.out.println(clock.getFormattedClock() + name + " leaves work");
-	}
-	
-	//Go to the end of the day status meeting
-	public void goToStatusMeeting(){
-		System.out.println(clock.getFormattedClock() + name + " goes to daily status meeting");
-	}
-	
 	//Go to morning team stand-up meeting
-	public void goToStandUpMeeting(){
+	public void goToTeamStandUpMeeting(){
 		System.out.println(clock.getFormattedClock() + name + " goes to team standup");
+		this.teamStandUpLatch.countDown();
+		try{
+			this.teamStandUpLatch.await();
+		}
+		catch(InterruptedException e){
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
 	public void workday() {
 		//Start of day - employee arrives
 		this.arrive();
+		this.goToTeamStandUpMeeting();
 	}
+	
+//	Implemented in abstract method. No need to override (I think)
+//	public void goToLunch(){
+//		System.out.println(clock.getFormattedClock() + name + " goes to lunch");
+//	}
+//	
+//	public void leave(){
+//		System.out.println(clock.getFormattedClock() + name + " leaves work");
+//	}
+//	
+//	//Go to the end of the day status meeting
+//	public void goToStatusMeeting(){
+//		System.out.println(clock.getFormattedClock() + name + " goes to daily status meeting");
+//	}
 }
