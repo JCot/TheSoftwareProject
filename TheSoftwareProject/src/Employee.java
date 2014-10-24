@@ -50,7 +50,7 @@ public class Employee extends Worker{
 		}
 		timeWorked += clock.getClock() - arrivalTime;
 		System.out.println(clock.getFormattedClock() + "  " + name + " goes to team standup");
-		this.timeLapse(15);
+		this.timeLapseWorking(15);
 		timeInMeetings += 15;
 	}
 	
@@ -80,8 +80,12 @@ public class Employee extends Worker{
 		int backFromLunch = clock.getClock();
 		
 		//4pm = 480
-		this.timeLapse(480-backFromLunch);
+		this.timeLapseWorking(480-backFromLunch);
 		this.goToStatusMeeting();
+		//Add random time until 4:15?
+		if(480 > timeWorked){
+			this.timeLapseWorking(480 - timeWorked);
+		}
 		this.leave();
 	}
 }

@@ -79,7 +79,7 @@ public class Manager extends Worker{
 	 */
 	public void goToMeeting(){
 		System.out.println(clock.getFormattedClock() + "  " + name + " goes to a meeting");
-		this.timeLapse(60); 
+		this.timeLapseWorking(60); 
 		System.out.println(clock.getFormattedClock() + "  " + name + " returns from a meeting");
 	}
 	
@@ -100,7 +100,7 @@ public class Manager extends Worker{
 		
 		System.out.println(clock.getFormattedClock() + "  " + name + " starts the morning standup.");
 		//wait(minute * 15);  //the meeting lasts 15 minutes
-		this.timeLapse(15);
+		this.timeLapseWorking(15);
 		System.out.println(clock.getFormattedClock() + "  " + name + " ends the morning standup.");
 		synchronized(standup) {
 			standup.notifyAll();

@@ -41,6 +41,7 @@ public abstract class Worker extends Thread {
 			while (clock.getClock() < (this.lunchEndTime - this.timeAtLunch)) {
 				try {
 					clock.wait();
+					this.timeWorked++;
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -66,7 +67,7 @@ public abstract class Worker extends Thread {
 	}
 	
 	public void leave(){
-		System.out.println(clock.getFormattedClock() + "   " + name + " leaves work");
+		System.out.println(clock.getFormattedClock() + "  " + name + " leaves work");
 	}
 	
 	//Go to the end of the day status meeting
@@ -74,13 +75,16 @@ public abstract class Worker extends Thread {
 		System.out.println(clock.getFormattedClock() + "  " + name + " goes to daily status meeting");
 		
 		this.meetings.getStatusLatch().countDown();
+		int timeBeforeWait = clock.getClock();
 		try {
 			this.meetings.getStatusLatch().await();
 		}
 		catch(InterruptedException e){
 			e.printStackTrace();
 		}
-		this.timeLapse(15);
+		int timeAfterWait = clock.getClock();
+		this.timeWorked += (timeAfterWait - timeBeforeWait);
+		this.timeLapseWorking(15);
 		System.out.println(clock.getFormattedClock() + "  " + name + " leaves the daily status meeting");
 		
 	}
@@ -91,6 +95,20 @@ public abstract class Worker extends Thread {
 			while(clock.getClock() < time + minutes) {
 				try {
 					clock.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	protected void timeLapseWorking(int minutes) {
+		synchronized(clock){
+			int time = clock.getClock();
+			while(clock.getClock() < time + minutes) {
+				try {
+					clock.wait();
+					this.timeWorked++;
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}

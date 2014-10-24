@@ -42,13 +42,18 @@ public class TeamLead extends Employee {
 		System.out.println(clock.getFormattedClock() + "  " + name + " knocks on the manager's door.");
 		
 		managerStandup.countDown();
+		
+		int timeBeforeWaiting = clock.getClock();
 		try{
 			managerStandup.await();
 		}
 		catch(InterruptedException e){
 			e.printStackTrace();
 		}
-		this.timeLapse(15);
+		int timeAfterWaiting = clock.getClock();
+		this.timeWorked += (timeAfterWaiting - timeBeforeWaiting);
+		
+		this.timeLapseWorking(15);
 		
 		timeInMeetings += 15;
 	}
@@ -58,6 +63,7 @@ public class TeamLead extends Employee {
 		System.out.println(clock.getFormattedClock() + "  " + name + " waits for team members to arrive");
 		CountDownLatch teamStandup = this.meetings.getTeamStandUpLatch(Integer.parseInt(team)-1);
 		teamStandup.countDown();
+		int timeBefore = clock.getClock();
 		try{
 			teamStandup.await();
 		} catch(InterruptedException e){
@@ -65,28 +71,26 @@ public class TeamLead extends Employee {
 		}
 		
 		
-		//First try to acquire the conference room
-		boolean roomAvailable = available.tryAcquire();
-		if(roomAvailable) {
-			System.out.println(clock.getFormattedClock() + "  " + name + " secures a spot in the conference room");
-		} else {
-			System.out.println(clock.getFormattedClock() + "  " + name + " waits for the conference room to be available");
-		}
 		
-		//If that didn't work then wait until it can be acquired
+		//First try to acquire the conference room
 		try {
-			if(roomAvailable == false) {
+			boolean roomAvailable = available.tryAcquire();
+			if(roomAvailable) {
+				System.out.println(clock.getFormattedClock() + "  " + name + " secures a spot in the conference room");
+			} else {
+				//If that didn't work then wait until it can be acquired
+				System.out.println(clock.getFormattedClock() + "  " + name + " waits for the conference room to be available");
 				available.acquire();
-				//Print out the message stating that the team lead will use the room
 				System.out.println(clock.getFormattedClock() + "  " + name + " secures a spot in the conference room");
 			}
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
 		
+		int timeAfter = clock.getClock();
+		this.timeWorked += (timeAfter - timeBefore);
 		
-		
-		//Notify the team that the meeting is taking place and wait for them to arrive
+		//Notify the team that the meeting is taking place
 		synchronized(teamStandup){
 			teamStandup.notifyAll();
 		}
@@ -94,7 +98,7 @@ public class TeamLead extends Employee {
 		
 		System.out.println(clock.getFormattedClock() + "  " + name + " hosts team standup meeting");
 		timeInMeetings += 15;
-		this.timeLapse(15);	
+		this.timeLapseWorking(15);	
 		System.out.println(clock.getFormattedClock() + "  " + name + " ends team standup meeting");
 		available.release();
 		
@@ -106,13 +110,17 @@ public class TeamLead extends Employee {
 		this.goToManagerMeeting();
 		this.goToTeamStandUpMeeting();
 		
-		//TODO figure out timing, asking questions
+		//TODO asking questions
 		this.goToLunch();
 		int backFromLunch = clock.getClock();
 		
 		//4pm = 480
-		this.timeLapse(480-backFromLunch);
+		this.timeLapseWorking(480-backFromLunch);
+		//Add random time until 4:15?
 		this.goToStatusMeeting();
+		if(480 > timeWorked){
+			this.timeLapseWorking(480 - timeWorked);
+		}
 		this.leave();
 	}
 
