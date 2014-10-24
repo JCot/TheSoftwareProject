@@ -1,0 +1,16 @@
+Report Outline
+-------------------------------
+You should make and document plausible assumptions:
+	- about the time between questions for a team
+	- average lunch break
+	- arrival and departure times
+
+Experiment with different assumptions to see their effect, and document the results. 
+
+Write a report that details your design 
+	- decisions related to concurrency
+	- use of data structures
+	- special synchronization
+	- alternatives you considered
+
+The results of your experiments (e.g., were any race conditions uncovered? were you able to correct these?).
