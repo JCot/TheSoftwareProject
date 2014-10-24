@@ -10,14 +10,19 @@ Experiment with different assumptions to see their effect, and document the resu
 Write a report that details your design 
 	- decisions related to concurrency
 	- use of data structures
-		- Abstract Worker class
+		- Abstract Worker class -> implements Template Method design pattern w/ Workday method
+		- Clock class for keeping track of time (its a SMR)
 		- Queue for the questions
+		- MeetingController class to encapsulate meeting latches/barriers
 	- special synchronization
 		- keeping the conference rooms open
 		- boolean values for if a worker is "busy" or "free"
 	- alternatives you considered
 		- can talk a bit about alternate assumptions
 		- Class/Thread for the Conference room
+		- Use of a single thread (and no SMR) for keeping track of time
+	- implementation challenges
+		- can talk about these as well
 
 The results of your experiments (e.g., were any race conditions uncovered? were you able to correct these?).
 	Possible experiments
