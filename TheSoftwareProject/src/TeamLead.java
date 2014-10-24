@@ -55,6 +55,16 @@ public class TeamLead extends Employee {
 	
 	@Override
 	public void goToTeamStandUpMeeting(){
+		System.out.println(clock.getFormattedClock() + "  " + name + " waits for team members to arrive");
+		CountDownLatch teamStandup = this.meetings.getTeamStandUpLatch(Integer.parseInt(team)-1);
+		teamStandup.countDown();
+		try{
+			teamStandup.await();
+		} catch(InterruptedException e){
+			e.printStackTrace();
+		}
+		
+		
 		//First try to acquire the conference room
 		boolean roomAvailable = available.tryAcquire();
 		if(roomAvailable) {
@@ -74,19 +84,13 @@ public class TeamLead extends Employee {
 			e1.printStackTrace();
 		}
 		
-		CountDownLatch teamStandup = this.meetings.getTeamStandUpLatch(Integer.parseInt(team)-1);
+		
 		
 		//Notify the team that the meeting is taking place and wait for them to arrive
 		synchronized(teamStandup){
 			teamStandup.notifyAll();
 		}
-		System.out.println(clock.getFormattedClock() + "  " + name + " waits for team members to arrive");
-		teamStandup.countDown();
-		try{
-			teamStandup.await();
-		} catch(InterruptedException e){
-			e.printStackTrace();
-		}
+		
 		
 		System.out.println(clock.getFormattedClock() + "  " + name + " hosts team standup meeting");
 		timeInMeetings += 15;
@@ -104,6 +108,10 @@ public class TeamLead extends Employee {
 		
 		//TODO figure out timing, asking questions
 		this.goToLunch();
+		int backFromLunch = clock.getClock();
+		
+		//4pm = 480
+		this.timeLapse(480-backFromLunch);
 		this.goToStatusMeeting();
 		this.leave();
 	}

@@ -22,7 +22,8 @@ public class Manager extends Worker{
 	public Manager(String name, Clock clock, CountDownLatch startLatch, MeetingController meetings) {
 		super(name, clock, startLatch, meetings);
 		this.arrivalTime = 0;
-		this.timeAtLunch = 60;
+		this.timeAtLunch = 60;// 1 hour
+		this.lunchEndTime = 300;// 1pm
 		employees = new ArrayList<Thread>();
 	}
 	
@@ -56,8 +57,7 @@ public class Manager extends Worker{
 		this.goToMeeting(); //10 AM
 		int meetingOneEnd = clock.getClock();
 		
-		//12pm = 240 minutes past 8am
-		this.timeLapse(240 - meetingOneEnd);// Wait until 12pm
+		//Work until lunch
 		this.goToLunch(); //12 PM
 		int lunchEnd = clock.getClock();
 		
@@ -68,6 +68,10 @@ public class Manager extends Worker{
 		
 		this.timeLapse(480 - meetingTwoEnd);
 		this.goToStatusMeeting(); //4PM
+		int statusEnd = clock.getClock();
+		
+		this.timeLapse(540 - statusEnd);
+		this.leave();
 	}
 	
 	/**

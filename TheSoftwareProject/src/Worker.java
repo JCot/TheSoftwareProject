@@ -36,7 +36,17 @@ public abstract class Worker extends Thread {
 	}
 	
 	public void goToLunch(){
-		System.out.println(clock.getFormattedClock() + "  " + name + " goes to lunch");
+		//Makes the employee work before going off to lunch
+		synchronized(clock) {
+			while (clock.getClock() < (this.lunchEndTime - this.timeAtLunch)) {
+				try {
+					clock.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		System.out.println(clock.getFormattedClock() + "  " + name + " goes to lunch for " + this.timeAtLunch+ " minutes");
 		this.timeLapse(this.timeAtLunch);
 		System.out.println(clock.getFormattedClock() + "  " + name + " returns from to lunch");
 	}
