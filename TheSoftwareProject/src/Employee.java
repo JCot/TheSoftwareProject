@@ -62,20 +62,26 @@ public class Employee extends Worker{
 	public void workday() {
 		//Start of day - employee arrives
 		this.arrive();
-		System.out.println(clock.getFormattedClock() + "  " + name + " works until team lead is finished with meeting with the manager");
 		
-		//Makes the employee wait until the manager meeting is over
-		synchronized(this.meetings.getManagerMeeting()){
-			try {
-				this.meetings.getManagerMeeting().wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+		
+		//Check if the meeting is still going on so that developers that 
+		//show up late won't be stuck waiting for a meeting that's over
+		if(!this.meetings.getManagerMeetingOver()) {
+			System.out.println(clock.getFormattedClock() + "  " + name + " works until team lead is finished with meeting with the manager");
+			//Makes the employee wait until the manager meeting is over
+			synchronized(this.meetings.getManagerMeeting()){
+				try {
+					this.meetings.getManagerMeeting().wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		}
+		
 		//System.err.println("before standup - " + this.name);
 		this.goToTeamStandUpMeeting();
 		
-		//TODO figure out timing, asking questions
+		//TODO asking questions
 		this.goToLunch();
 		int backFromLunch = clock.getClock();
 		

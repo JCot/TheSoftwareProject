@@ -3,7 +3,8 @@ of the software project day.
 -------------------------------------------------------------------------------
 
 - An employee asking a question is still considered to be working (unless they
-    are waiting for the project manager) and will not leave for lunch while
+    are waiting for the project manager, in which case they will go back to working
+    until he is available) and will not leave for lunch while
     asking a question or waiting for one to be answered.
 - Everyone is finished with lunch by 4pm.
 - Assume parameters can be used for arrival and lunch times

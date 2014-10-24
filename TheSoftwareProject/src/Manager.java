@@ -102,6 +102,7 @@ public class Manager extends Worker{
 		//wait(minute * 15);  //the meeting lasts 15 minutes
 		this.timeLapseWorking(15);
 		System.out.println(clock.getFormattedClock() + "  " + name + " ends the morning standup.");
+		this.meetings.setManagerMeetingOver();
 		synchronized(standup) {
 			standup.notifyAll();
 		}

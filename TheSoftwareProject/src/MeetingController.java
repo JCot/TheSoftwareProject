@@ -9,6 +9,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public class MeetingController {
 	private CountDownLatch managerMeeting;
+	private boolean managerMeetingOver = false;
 	private CountDownLatch statusMeetingLatch = new CountDownLatch(13);
 	private ArrayList<CountDownLatch> teamStandUpLatches;
 	
@@ -19,6 +20,14 @@ public class MeetingController {
 		for(int i = 0; i < numTeams; i++){
 			this.teamStandUpLatches.add(new CountDownLatch(sizeOfTeam));
 		}
+	}
+	
+	public synchronized void setManagerMeetingOver() {
+		managerMeetingOver = true;
+	}
+	
+	public synchronized boolean getManagerMeetingOver() {
+		return managerMeetingOver;
 	}
 	
 	public CountDownLatch getManagerMeeting(){
