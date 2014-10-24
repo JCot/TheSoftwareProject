@@ -31,17 +31,27 @@ public class Employee extends Worker{
 	//Go to morning team stand-up meeting
 	public void goToTeamStandUpMeeting(){
 		CountDownLatch teamStandup = this.meetings.getTeamStandUpLatch(Integer.parseInt(team)-1);
+		
+		//Forces the employee to continue waiting until they can have their standup
+		synchronized(teamStandup) {
+			try {
+				teamStandup.wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
 		timeWorked += clock.getClock() - arrivalTime;
 		System.out.println(clock.getFormattedClock() + "  " + name + " goes to team standup");
 		teamStandup.countDown();
 		try{
 			teamStandup.await();
 			timeInMeetings += 15;
-			wait();
 		}
 		catch(InterruptedException e){
 			e.printStackTrace();
 		}
+		this.timeLapse(15);
 	}
 	
 	public int getTimeWorked(){
@@ -52,8 +62,18 @@ public class Employee extends Worker{
 	public void workday() {
 		//Start of day - employee arrives
 		this.arrive();
-		//System.out.println(name + " works until team lead is finished with meeting with the manager");
-		//this.goToTeamStandUpMeeting();
+		System.out.println(clock.getFormattedClock() + "  " + name + " works until team lead is finished with meeting with the manager");
+		
+		//Makes the employee wait until the manager meeting is over
+		synchronized(this.meetings.getManagerMeeting()){
+			try {
+				this.meetings.getManagerMeeting().wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		this.goToTeamStandUpMeeting();
 		//TODO figure out timing, asking questions
 		//this.goToLunch();
 		//this.goToStatusMeeting();

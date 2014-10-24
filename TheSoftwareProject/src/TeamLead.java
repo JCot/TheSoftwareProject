@@ -55,34 +55,43 @@ public class TeamLead extends Employee {
 	
 	@Override
 	public void goToTeamStandUpMeeting(){
-		System.out.println(clock.getFormattedClock() + " " + name + " waits for team members to arrive");
-		CountDownLatch managerStandup = this.meetings.getTeamStandUpLatch(Integer.parseInt(team)-1);
-		managerStandup.countDown();
-		try{
-			managerStandup.await();
-		} catch(InterruptedException e){}
-		System.out.println(clock.getFormattedClock() + " " + name + " waits for the conference room to be available");
+		//First try to acquire the conference room
+		boolean roomAvailable = available.tryAcquire();
+		if(roomAvailable) {
+			System.out.println(clock.getFormattedClock() + "  " + name + " secures a spot in the conference room");
+		} else {
+			System.out.println(clock.getFormattedClock() + "  " + name + " waits for the conference room to be available");
+		}
+		
+		//If that didn't work then wait until it can be acquired
 		try {
-			available.acquire();
+			if(roomAvailable == false) {
+				available.acquire();
+				//Print out the message stating that the team lead will use the room
+				System.out.println(clock.getFormattedClock() + "  " + name + " secures a spot in the conference room");
+			}
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
-		System.out.println(clock.getFormattedClock() + " " + name + " hosts team standup meeting");
+		
+		CountDownLatch teamStandup = this.meetings.getTeamStandUpLatch(Integer.parseInt(team)-1);
+		
+		//Notify the team that the meeting is taking place and wait for them to arrive
+		synchronized(teamStandup){
+			teamStandup.notifyAll();
+		}
+		System.out.println(clock.getFormattedClock() + "  " + name + " waits for team members to arrive");
+		teamStandup.countDown();
+		try{
+			teamStandup.await();
+		} catch(InterruptedException e){
+			e.printStackTrace();
+		}
+		
+		System.out.println(clock.getFormattedClock() + "  " + name + " hosts team standup meeting");
 		timeInMeetings += 15;
-		synchronized(clock){
-			int time = clock.getClock();
-			while(clock.getClock() <= time + 15){
-				try{
-					clock.wait();
-				}
-				catch(InterruptedException e){
-					e.printStackTrace();
-				}
-			}
-		}
-		for(Employee e: teamMembers){
-			e.notify();
-		}
+		this.timeLapse(15);	
+		System.out.println(clock.getFormattedClock() + "  " + name + " ends team standup meeting");
 		available.release();
 		
 	}

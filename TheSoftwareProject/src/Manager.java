@@ -98,6 +98,9 @@ public class Manager extends Worker{
 		//wait(minute * 15);  //the meeting lasts 15 minutes
 		this.timeLapse(15);
 		System.out.println(clock.getFormattedClock() + "  " + name + " ends the morning standup.");
+		synchronized(standup) {
+			standup.notifyAll();
+		}
 	}
 	
 	
