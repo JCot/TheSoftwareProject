@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -9,13 +10,26 @@ import java.util.concurrent.CountDownLatch;
 public class MeetingController {
 	private CountDownLatch managerMeeting;
 	private CountDownLatch statusMeetingLatch = new CountDownLatch(13);
-	private CountDownLatch standUpLatch = new CountDownLatch(5);
+	private ArrayList<CountDownLatch> teamStandUpLatches;
 	
-	public MeetingController(){
+	public MeetingController(int numTeams, int sizeOfTeam){
 		this.managerMeeting = new CountDownLatch(4);
+		this.teamStandUpLatches = new ArrayList<CountDownLatch>();
+		
+		for(int i = 0; i < numTeams; i++){
+			this.teamStandUpLatches.add(new CountDownLatch(sizeOfTeam));
+		}
 	}
 	
 	public CountDownLatch getManagerMeeting(){
 		return this.managerMeeting;
+	}
+	
+	public ArrayList<CountDownLatch> getTeamStantUpLatches(){
+		return teamStandUpLatches;
+	}
+	
+	public CountDownLatch getStatusLatch(){
+		return statusMeetingLatch;
 	}
 }

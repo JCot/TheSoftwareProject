@@ -14,9 +14,12 @@ public abstract class Worker extends Thread {
 	protected Random rand = new Random();
 	
 	protected int timeInMeetings = 0;
+	protected int timeWorked = 0;
 	
 	protected static final int NUM_CONFERENCE_ROOMS = 1;
 	protected static final Semaphore available = new Semaphore(NUM_CONFERENCE_ROOMS, true);
+	protected final int day = 4800; //milliseconds
+	protected final int minute = 10; //milliseconds
 	
 	/**
 	 * 
@@ -35,6 +38,17 @@ public abstract class Worker extends Thread {
 	
 	public void goToLunch(){
 		System.out.println(clock.getFormattedClock() + " " + name + " goes to lunch");
+		try{
+			synchronized(clock){
+				int time = clock.getClock();
+				while(clock.getClock() <= time + timeAtLunch){
+					clock.wait();
+				}
+			}
+		}
+		catch(InterruptedException e){
+			e.printStackTrace();
+		}
 	}
 	
 	public void arrive(){
@@ -42,7 +56,7 @@ public abstract class Worker extends Thread {
 		synchronized(clock) {
 			while (clock.getClock() < this.arrivalTime) {
 				try {
-					clock.wait(); //Should this just be wait()? So the Worker waits not the clock
+					clock.wait();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -62,6 +76,17 @@ public abstract class Worker extends Thread {
 		this.statusMeetingLatch.countDown();
 		try{
 			this.statusMeetingLatch.await();
+			synchronized(clock){
+				int time = clock.getClock();
+				while(clock.getClock() <= time + 15){
+					try{
+						clock.wait();
+					}
+					catch(InterruptedException e){
+						e.printStackTrace();
+					}
+				}
+			}
 		}
 		catch(InterruptedException e){
 			e.printStackTrace();

@@ -15,8 +15,8 @@ public class Main {
 		CountDownLatch startLatch = new CountDownLatch(1);
 		//The status meeting at the end of the day will involve all 13 employees
 		CountDownLatch statusMeetingLatch = new CountDownLatch(13);
-		//The meeting between the manager and the team leads will involve 5 people
-		CountDownLatch standUpLatch = new CountDownLatch(5);
+		//The meeting between the manager and the team leads will involve 4 people
+		CountDownLatch standUpLatch = new CountDownLatch(4);
 		Clock clock = new Clock();
 		List<Thread> employees = new ArrayList<Thread>();
 		Thread timer = new Thread(new Timer(minute,day,clock,startLatch));
@@ -28,17 +28,14 @@ public class Main {
 		//where 1 is the team lead)
 		for (int i = 1; i <= 3; i++) {
 			CountDownLatch teamStandUpLatch = new CountDownLatch(4);
-			for (int j = 1; j<=4; j++) {
-				if(j == 1){
-					TeamLead l = new TeamLead("Developer " + i + j, Integer.toString(j), Integer.toString(i), clock, startLatch, statusMeetingLatch, teamStandUpLatch, standUpLatch);
-					employees.add(l);
-					bob.addEmployee(l);
-				}
-				else{
-					Employee e = new Employee("Developer " + i + j, Integer.toString(j), Integer.toString(i), clock, startLatch, statusMeetingLatch, teamStandUpLatch);
-					employees.add(e);
-					bob.addEmployee(e);
-				}
+			TeamLead l = new TeamLead("Developer " + i + "1", "1", Integer.toString(i), clock, startLatch, statusMeetingLatch, teamStandUpLatch, standUpLatch);
+			employees.add(l);
+			bob.addEmployee(l);
+			for (int j = 2; j<=4; j++) { 
+				Employee e = new Employee("Developer " + i + j, Integer.toString(j), Integer.toString(i), clock, startLatch, statusMeetingLatch, teamStandUpLatch);
+				employees.add(e);
+				bob.addEmployee(e);
+				l.addEmployee(e);
 			}
 		}
 		

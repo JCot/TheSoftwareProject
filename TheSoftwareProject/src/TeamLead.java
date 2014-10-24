@@ -12,19 +12,22 @@ public class TeamLead extends Employee {
 		this.managerMeetingLatch = managerMeetingLatch;
 	}
 	
+	public void addEmployee(Employee e){
+		teamMembers.add(e);
+	}
+	
 	//Try and answer a team members question
 	public void answerQuestion(){
 		boolean canAnswer = (rand.nextInt(1) == 1);
 		
 		if(canAnswer){
 			System.out.println(clock.getFormattedClock() + name + " answers a question");
-			
 			return;
 		}
 		
 		else{
 			System.out.println(clock.getFormattedClock() + name + " cannot answer a question. Takes question to manager");
-			//lead.askQuestion();
+			askQuestion();
 		}
 	}
 	
@@ -41,6 +44,17 @@ public class TeamLead extends Employee {
 		try{
 			this.managerMeetingLatch.await();
 			timeInMeetings += 15;
+			synchronized(clock){
+				int time = clock.getClock();
+				while(clock.getClock() <= time + 15){
+					try{
+						clock.wait();
+					}
+					catch(InterruptedException e){
+						e.printStackTrace();
+					}
+				}
+			}
 		}
 		catch(InterruptedException e){
 			e.printStackTrace();
@@ -49,15 +63,29 @@ public class TeamLead extends Employee {
 	
 	@Override
 	public void goToTeamStandUpMeeting(){
-		System.out.println(name + " waits for team members to arrive");
+		System.out.println(clock.getFormattedClock() + " " + name + " waits for team members to arrive");
 		teamStandUpLatch.countDown();
 		try{
 			teamStandUpLatch.await();
+			System.out.println(clock.getFormattedClock() + " " + name + " waits for the conference room to be available");
 			available.acquire();
 			System.out.println(clock.getFormattedClock() + " " + name + " hosts team standup meeting");
 			timeInMeetings += 15;
-			//sleep for some time;
-			notifyAll();
+			synchronized(clock){
+				int time = clock.getClock();
+				while(clock.getClock() <= time + 15){
+					try{
+						clock.wait();
+					}
+					catch(InterruptedException e){
+						e.printStackTrace();
+					}
+				}
+			}
+			for(Employee e: teamMembers){
+				e.notify();
+			}
+			available.release();
 		}
 		catch(InterruptedException e){}
 	}
@@ -67,6 +95,11 @@ public class TeamLead extends Employee {
 		this.arrive();
 		this.goToManagerMeeting();
 		this.goToTeamStandUpMeeting();
+		
+		//TODO figure out timing, asking questions
+		this.goToLunch();
+		this.goToStatusMeeting();
+		this.leave();
 	}
 
 }

@@ -10,7 +10,6 @@ public class Employee extends Worker{
 	protected String devNumber;
 	protected String teamLead;
 	protected CountDownLatch teamStandUpLatch;
-	protected int timeWorked = 0;
 	
 	public Employee (String name, String devNumber, String teamNumber, Clock clock, CountDownLatch startLatch, CountDownLatch statusMeetingLatch, CountDownLatch teamStandUpLatch) {
 		super(name, clock, startLatch, statusMeetingLatch);
@@ -45,29 +44,19 @@ public class Employee extends Worker{
 		}
 	}
 	
-	@Override
-	public void workday() {
-		//Start of day - employee arrives
-		this.arrive();
-		System.out.println(name + " works until team lead is finished with meeting with the manager");
-		this.goToTeamStandUpMeeting();
-	}
-	
 	public int getTimeWorked(){
 		return timeWorked;
 	}
 	
-//	Implemented in abstract method. No need to override (I think)
-//	public void goToLunch(){
-//		System.out.println(clock.getFormattedClock() + name + " goes to lunch");
-//	}
-//	
-//	public void leave(){
-//		System.out.println(clock.getFormattedClock() + name + " leaves work");
-//	}
-//	
-//	//Go to the end of the day status meeting
-//	public void goToStatusMeeting(){
-//		System.out.println(clock.getFormattedClock() + name + " goes to daily status meeting");
-//	}
+	@Override
+	public void workday() {
+		//Start of day - employee arrives
+		this.arrive();
+		//System.out.println(name + " works until team lead is finished with meeting with the manager");
+		//this.goToTeamStandUpMeeting();
+		//TODO figure out timing, asking questions
+		//this.goToLunch();
+		//this.goToStatusMeeting();
+		//this.leave();
+	}
 }
