@@ -29,12 +29,11 @@ public class Main {
 		for (int i = 1; i <= numTeams; i++) {
 			TeamLead lead = new TeamLead("Developer " + i + "1", "1", Integer.toString(i), clock, startLatch, meetings);
 			employees.add(lead);
-			bob.addEmployee(lead);
+			bob.addTeamLead(lead);
 			for (int j = 2; j<=numDevsPerTeam; j++) { 
-				Employee dev = new Employee("Developer " + i + j, Integer.toString(j), Integer.toString(i), clock, startLatch, meetings);
+				Employee dev = new Employee("Developer " + i + j, Integer.toString(j), Integer.toString(i), lead, clock, startLatch, meetings);
 				employees.add(dev);
 				bob.addEmployee(dev);
-				lead.addEmployee(dev);
 			}
 		}
 		

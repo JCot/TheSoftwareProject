@@ -9,6 +9,7 @@ import java.util.concurrent.CountDownLatch;
  */
 public class Manager extends Worker{
 	private List<Thread> employees;
+	private List<Thread> teamLeads;
 	
 	/**
 	 * accumulate statistics on the total amount of time across the manager
@@ -25,10 +26,15 @@ public class Manager extends Worker{
 		this.timeAtLunch = 60;// 1 hour
 		this.lunchEndTime = 300;// 1pm
 		employees = new ArrayList<Thread>();
+		teamLeads = new ArrayList<Thread>();
 	}
 	
 	public void addEmployee(Employee e) {
 		employees.add(e);
+	}
+	
+	public void addTeamLead(TeamLead l){
+		teamLeads.add(l);
 	}
 	
 	public void answerQuestion() {
@@ -141,6 +147,18 @@ public class Manager extends Worker{
 	
 	public int totalTimeWaiting() {
 		return 0;
+	}
+
+	@Override
+	public void goToTeamStandUpMeeting() {
+		// Does nothing for manager
+		
+	}
+
+	@Override
+	public void askQuestion() {
+		// Does nothing for manager
+		
 	}
 	
 }

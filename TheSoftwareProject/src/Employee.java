@@ -12,23 +12,22 @@ import java.util.concurrent.CyclicBarrier;
 public class Employee extends Worker{
 	protected String team;
 	protected String devNumber;
-	protected String teamLead;
 	protected ArrayList<Integer> questionTimes;
+	private TeamLead lead;
 	
-	public Employee (String name, String devNumber, String teamNumber, Clock clock, CountDownLatch startLatch, MeetingController meetings) {
+	public Employee (String name, String devNumber, String teamNumber, TeamLead lead, Clock clock, CountDownLatch startLatch, MeetingController meetings) {
 		super(name, clock, startLatch, meetings);
 
 		this.devNumber = devNumber;
 		this.team = teamNumber;
-		this.teamLead = "Developer " + team + "1";
+		this.lead = lead;
 		this.arrivalTime = rand.nextInt(30);
 		this.lunchEndTime = rand.nextInt(480 - 240) + 240;
 		this.timeAtLunch = rand.nextInt(30 - this.arrivalTime) + 30;
-		this.clock = clock;
 		this.name = name;
 		this.questionTimes = new ArrayList<Integer>();
 		
-		int numQuestions = rand.nextInt(1);
+		int numQuestions = 1;//rand.nextInt(1);
 		for(int i = 0; i < numQuestions; i++){
 			questionTimes.add(rand.nextInt(480 - 90) + 90);
 		}
@@ -37,11 +36,14 @@ public class Employee extends Worker{
 	}
 	
 	//Ask team lead a question
+	@Override
 	public void askQuestion(){
-		System.out.println(clock.getFormattedClock() + " " + name + " asks team lead a question");
+		System.out.println(clock.getFormattedClock() + "  " + name + " asks their team lead a question");
+		lead.answerQuestion();
 	}
 	
 	//Go to morning team stand-up meeting
+	@Override
 	public void goToTeamStandUpMeeting(){
 		CyclicBarrier teamStandup = this.meetings.getTeamStandUpLatch(Integer.parseInt(team)-1);
 		try{
@@ -114,8 +116,8 @@ public class Employee extends Worker{
 						}
 					}
 				}
-				
 				//TODO ask team lead a question. Need to figure out how to tell employee who team lead is.
+				askQuestion();
 			}
 		}
 		

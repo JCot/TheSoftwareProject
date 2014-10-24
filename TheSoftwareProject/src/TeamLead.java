@@ -4,18 +4,17 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 
 
-public class TeamLead extends Employee {
-	private ArrayList<Employee> teamMembers;//May not be needed
+public class TeamLead extends Worker {
 	private String team;
+	private String devNumber;
 	
 	public TeamLead(String name, String devNumber, String teamNumber, Clock clock, CountDownLatch start, MeetingController meetings){
-		super(name, devNumber, teamNumber, clock, start, meetings);
+		super(name, clock, start, meetings);
 		this.team = teamNumber;
-		teamMembers = new ArrayList<Employee>();
-	}
-	
-	public void addEmployee(Employee e){
-		teamMembers.add(e);
+		this.devNumber = devNumber;
+		this.arrivalTime = rand.nextInt(30);
+		this.lunchEndTime = rand.nextInt(480 - 240) + 240;
+		this.timeAtLunch = rand.nextInt(30 - this.arrivalTime) + 30;
 	}
 	
 	//Try and answer a team members question
@@ -23,12 +22,12 @@ public class TeamLead extends Employee {
 		boolean canAnswer = true;//(rand.nextInt(1) == 1);
 		
 		if(canAnswer){
-			System.out.println(clock.getFormattedClock() + name + " answers a question");
+			System.out.println(clock.getFormattedClock() + "  " + name + " answers a question");
 			return;
 		}
 		
 		else{
-			System.out.println(clock.getFormattedClock() + name + " cannot answer a question. Takes question to manager");
+			System.out.println(clock.getFormattedClock() + "  " + name + " cannot answer a question. Takes question to manager");
 			askQuestion();
 		}
 	}

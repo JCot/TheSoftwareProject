@@ -108,6 +108,8 @@ public abstract class Worker extends Thread {
 	 * Workday is an abstract method that will simulate a worker's workday. 
 	 */
 	public abstract void workday();
+	public abstract void goToTeamStandUpMeeting();
+	public abstract void askQuestion();
 	
 	public void run(){
 		try {
