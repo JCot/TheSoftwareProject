@@ -20,7 +20,7 @@ public class TeamLead extends Employee {
 	
 	//Try and answer a team members question
 	public void answerQuestion(){
-		boolean canAnswer = (rand.nextInt(1) == 1);
+		boolean canAnswer = true;//(rand.nextInt(1) == 1);
 		
 		if(canAnswer){
 			System.out.println(clock.getFormattedClock() + name + " answers a question");
@@ -73,8 +73,6 @@ public class TeamLead extends Employee {
 			e.printStackTrace();
 		}
 		
-		
-		
 		//First try to acquire the conference room
 		try {
 			boolean roomAvailable = available.tryAcquire();
@@ -119,6 +117,17 @@ public class TeamLead extends Employee {
 		this.goToTeamStandUpMeeting();
 		
 		//TODO asking questions
+		//Makes the employee work before going off to lunch
+		synchronized(clock) {
+			while (clock.getClock() < (this.lunchEndTime - this.timeAtLunch)) {
+				try {
+					clock.wait();
+					this.timeWorked++;
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 		this.goToLunch();
 		int backFromLunch = clock.getClock();
 		

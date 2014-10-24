@@ -57,6 +57,17 @@ public class Manager extends Worker{
 		this.goToMeeting(); //10 AM
 		
 		//Work until lunch
+		//Makes the employee work before going off to lunch
+		synchronized(clock) {
+			while (clock.getClock() < (this.lunchEndTime - this.timeAtLunch)) {
+				try {
+					clock.wait();
+					this.timeWorked++;
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 		this.goToLunch(); //12 PM
 		int lunchEnd = clock.getClock();
 		

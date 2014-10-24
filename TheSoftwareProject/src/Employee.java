@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
@@ -11,6 +13,7 @@ public class Employee extends Worker{
 	protected String team;
 	protected String devNumber;
 	protected String teamLead;
+	protected ArrayList<Integer> questionTimes;
 	
 	public Employee (String name, String devNumber, String teamNumber, Clock clock, CountDownLatch startLatch, MeetingController meetings) {
 		super(name, clock, startLatch, meetings);
@@ -23,6 +26,14 @@ public class Employee extends Worker{
 		this.timeAtLunch = rand.nextInt(30 - this.arrivalTime) + 30;
 		this.clock = clock;
 		this.name = name;
+		this.questionTimes = new ArrayList<Integer>();
+		
+		int numQuestions = rand.nextInt(1);
+		for(int i = 0; i < numQuestions; i++){
+			questionTimes.add(rand.nextInt(480 - 90) + 90);
+		}
+		
+		Collections.sort(questionTimes);
 	}
 	
 	//Ask team lead a question
@@ -84,6 +95,40 @@ public class Employee extends Worker{
 		this.goToTeamStandUpMeeting();
 		
 		//TODO asking questions
+		//Makes the employee work before going off to lunch
+		for(int i = 0; i < questionTimes.size(); i++){
+			if(questionTimes.get(i) > this.lunchEndTime - this.timeAtLunch){
+				break;
+			}
+			
+			else{
+				int askQuestionTime = questionTimes.get(i);
+				
+				synchronized(clock) {
+					while (clock.getClock() < askQuestionTime) {
+						try {
+							clock.wait();
+							this.timeWorked++;
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				
+				//TODO ask team lead a question. Need to figure out how to tell employee who team lead is.
+			}
+		}
+		
+		synchronized(clock) {
+			while (clock.getClock() < (this.lunchEndTime - this.timeAtLunch)) {
+				try {
+					clock.wait();
+					this.timeWorked++;
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 		this.goToLunch();
 		int backFromLunch = clock.getClock();
 		
