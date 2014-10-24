@@ -33,22 +33,12 @@ public abstract class Worker extends Thread {
 		this.clock = clock;
 		this.startLatch = startLatch;
 		this.statusMeetingLatch = statusMeetingLatch;
-		
 	}
 	
 	public void goToLunch(){
-		System.out.println(clock.getFormattedClock() + " " + name + " goes to lunch");
-		try{
-			synchronized(clock){
-				int time = clock.getClock();
-				while(clock.getClock() <= time + timeAtLunch){
-					clock.wait();
-				}
-			}
-		}
-		catch(InterruptedException e){
-			e.printStackTrace();
-		}
+		System.out.println(clock.getFormattedClock() + "  " + name + " goes to lunch");
+		this.timeLapse(this.timeAtLunch);
+		System.out.println(clock.getFormattedClock() + "  " + name + " returns from to lunch");
 	}
 	
 	public void arrive(){
@@ -62,37 +52,41 @@ public abstract class Worker extends Thread {
 				}
 			}
 		}
-		System.out.println(clock.getFormattedClock() + " " + " " + name + " arrives at work");
+		System.out.println(clock.getFormattedClock() + "  " + name + " arrives at work");
 	}
 	
 	public void leave(){
-		System.out.println(clock.getFormattedClock() + " " + name + " leaves work");
+		System.out.println(clock.getFormattedClock() + "   " + name + " leaves work");
 	}
 	
 	//Go to the end of the day status meeting
 	public void goToStatusMeeting(){
-		System.out.println(clock.getFormattedClock() + " " + name + " goes to daily status meeting");
+		System.out.println(clock.getFormattedClock() + "  " + name + " goes to daily status meeting");
 		
 		this.statusMeetingLatch.countDown();
-		try{
+		try {
 			this.statusMeetingLatch.await();
-			synchronized(clock){
-				int time = clock.getClock();
-				while(clock.getClock() <= time + 15){
-					try{
-						clock.wait();
-					}
-					catch(InterruptedException e){
-						e.printStackTrace();
-					}
-				}
-			}
 		}
 		catch(InterruptedException e){
 			e.printStackTrace();
 		}
+		this.timeLapse(15);
+		System.out.println(clock.getFormattedClock() + "  " + name + " leaves the daily status meeting");
+		
 	}
 	
+	protected void timeLapse(int minutes) {
+		synchronized(clock){
+			int time = clock.getClock();
+			while(clock.getClock() < time + minutes) {
+				try {
+					clock.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 	/**
 	 * Workday is an abstract method that will simulate a worker's workday. 
 	 */

@@ -49,10 +49,26 @@ public class Manager extends Worker{
 	 */
 	public void workday() {
 		this.arrive(); //8 AM
+		System.out.println(clock.getFormattedClock() + "  " + name + " performs planning and administrative activities");
 		this.startStandUpMeeting(); //ASAP
+		int standupEnd = clock.getClock();
+		
+		//10am = 120 minutes past 8am
+		this.timeLapse(120 - standupEnd);// Wait until 10am
 		this.goToMeeting(); //10 AM
+		int meetingOneEnd = clock.getClock();
+		
+		//12pm = 240 minutes past 8am
+		this.timeLapse(240 - meetingOneEnd);// Wait until 12pm
 		this.goToLunch(); //12 PM
+		int lunchEnd = clock.getClock();
+		
+		//2pm = 360 minutes past 8am
+		this.timeLapse(360 - lunchEnd);
 		this.goToMeeting(); //2PM
+		int meetingTwoEnd = clock.getClock();
+		
+		this.timeLapse(480 - meetingTwoEnd);
 		this.goToStatusMeeting(); //4PM
 	}
 	
@@ -60,18 +76,9 @@ public class Manager extends Worker{
 	 * There are 2 meetings, one at 10 and one at 2, they are both 1 hour
 	 */
 	public void goToMeeting(){
-		System.out.println(clock.getFormattedClock() + " " + name + " goes to a meeting");
-		try {
-			synchronized(clock){
-				int time = clock.getClock();
-				while(clock.getClock() <= time + 60){
-					clock.wait();
-				}
-			}
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		System.out.println(clock.getFormattedClock() + "  " + name + " goes to a meeting");
+		this.timeLapse(60); 
+		System.out.println(clock.getFormattedClock() + "  " + name + " returns from a meeting");
 	}
 	
 	
@@ -82,25 +89,16 @@ public class Manager extends Worker{
 	public void startStandUpMeeting() {
 		standUpLatch.countDown();
 		try {
-			standUpLatch.await();  //waiting for everyone to get here.
-			System.out.println(clock.getFormattedClock() + " " + name + " starts the morning stand up.");
-			//wait(minute * 15);  //the meeting lasts 15 minutes
-			synchronized(clock){
-				int time = clock.getClock();
-				while(clock.getClock() <= time + 15){
-					try{
-						clock.wait();
-					}
-					catch(InterruptedException e){
-						e.printStackTrace();
-					}
-				}
-			}
+			//waiting for everyone to get here.
+			standUpLatch.await();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println(clock.getFormattedClock() + " " + name + " ends the morning stand up.");
+		
+		System.out.println(clock.getFormattedClock() + "  " + name + " starts the morning standup.");
+		//wait(minute * 15);  //the meeting lasts 15 minutes
+		this.timeLapse(15);
+		System.out.println(clock.getFormattedClock() + "  " + name + " ends the morning standup.");
 	}
 	
 	

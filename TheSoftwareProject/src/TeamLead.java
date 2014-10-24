@@ -38,27 +38,18 @@ public class TeamLead extends Employee {
 	
 	//Go to morning meeting with PM
 	public void goToManagerMeeting(){
-		System.out.println(clock.getFormattedClock() + " " + name + " knocks on the managers door.");
+		System.out.println(clock.getFormattedClock() + "  " + name + " knocks on the manager's door.");
 		
 		this.managerMeetingLatch.countDown();
 		try{
 			this.managerMeetingLatch.await();
-			timeInMeetings += 15;
-			synchronized(clock){
-				int time = clock.getClock();
-				while(clock.getClock() <= time + 15){
-					try{
-						clock.wait();
-					}
-					catch(InterruptedException e){
-						e.printStackTrace();
-					}
-				}
-			}
 		}
 		catch(InterruptedException e){
 			e.printStackTrace();
 		}
+		this.timeLapse(15);
+		
+		timeInMeetings += 15;
 	}
 	
 	@Override

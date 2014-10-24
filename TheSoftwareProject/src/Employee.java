@@ -32,7 +32,7 @@ public class Employee extends Worker{
 	//Go to morning team stand-up meeting
 	public void goToTeamStandUpMeeting(){
 		timeWorked += clock.getClock() - arrivalTime;
-		System.out.println(clock.getFormattedClock() + " " + name + " goes to team standup");
+		System.out.println(clock.getFormattedClock() + "  " + name + " goes to team standup");
 		this.teamStandUpLatch.countDown();
 		try{
 			this.teamStandUpLatch.await();
