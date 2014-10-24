@@ -9,11 +9,10 @@ public class Employee extends Worker{
 	protected String team;
 	protected String devNumber;
 	protected String teamLead;
-	protected CountDownLatch teamStandUpLatch;
 	
-	public Employee (String name, String devNumber, String teamNumber, Clock clock, CountDownLatch startLatch, CountDownLatch statusMeetingLatch, CountDownLatch teamStandUpLatch) {
-		super(name, clock, startLatch, statusMeetingLatch);
-		this.teamStandUpLatch = teamStandUpLatch;
+	public Employee (String name, String devNumber, String teamNumber, Clock clock, CountDownLatch startLatch, MeetingController meetings) {
+		super(name, clock, startLatch, meetings);
+
 		this.devNumber = devNumber;
 		this.team = teamNumber;
 		this.teamLead = "Developer " + team + "1";
@@ -31,11 +30,12 @@ public class Employee extends Worker{
 	
 	//Go to morning team stand-up meeting
 	public void goToTeamStandUpMeeting(){
+		CountDownLatch teamStandup = this.meetings.getTeamStandUpLatch(Integer.parseInt(team)-1);
 		timeWorked += clock.getClock() - arrivalTime;
 		System.out.println(clock.getFormattedClock() + "  " + name + " goes to team standup");
-		this.teamStandUpLatch.countDown();
+		teamStandup.countDown();
 		try{
-			this.teamStandUpLatch.await();
+			teamStandup.await();
 			timeInMeetings += 15;
 			wait();
 		}

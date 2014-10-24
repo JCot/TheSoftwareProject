@@ -25,8 +25,8 @@ public class MeetingController {
 		return this.managerMeeting;
 	}
 	
-	public ArrayList<CountDownLatch> getTeamStantUpLatches(){
-		return teamStandUpLatches;
+	public CountDownLatch getTeamStandUpLatch(int teamNum){
+		return teamStandUpLatches.get(teamNum);
 	}
 	
 	public CountDownLatch getStatusLatch(){

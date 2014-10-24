@@ -10,7 +10,7 @@ public abstract class Worker extends Thread {
 	protected int timeAtLunch;
 	protected Clock clock;
 	protected CountDownLatch startLatch;
-	protected CountDownLatch statusMeetingLatch;
+	protected MeetingController meetings;
 	protected Random rand = new Random();
 	
 	protected int timeInMeetings = 0;
@@ -28,11 +28,11 @@ public abstract class Worker extends Thread {
 	 * @param startLatch
 	 * @param statusMeetingLatch
 	 */
-	public Worker(String name, Clock clock, CountDownLatch startLatch, CountDownLatch statusMeetingLatch){
+	public Worker(String name, Clock clock, CountDownLatch startLatch, MeetingController meetings){
 		this.name = name;
 		this.clock = clock;
 		this.startLatch = startLatch;
-		this.statusMeetingLatch = statusMeetingLatch;
+		this.meetings = meetings;
 	}
 	
 	public void goToLunch(){
@@ -63,9 +63,9 @@ public abstract class Worker extends Thread {
 	public void goToStatusMeeting(){
 		System.out.println(clock.getFormattedClock() + "  " + name + " goes to daily status meeting");
 		
-		this.statusMeetingLatch.countDown();
+		this.meetings.getStatusLatch().countDown();
 		try {
-			this.statusMeetingLatch.await();
+			this.meetings.getStatusLatch().await();
 		}
 		catch(InterruptedException e){
 			e.printStackTrace();

@@ -9,7 +9,6 @@ import java.util.concurrent.CountDownLatch;
  */
 public class Manager extends Worker{
 	private List<Thread> employees;
-	private CountDownLatch standUpLatch;
 	
 	/**
 	 * accumulate statistics on the total amount of time across the manager
@@ -20,12 +19,11 @@ public class Manager extends Worker{
 	 *  	(d) waiting for the manager to be free to answer a question.
 	 * @param name
 	 */
-	public Manager(String name, Clock clock, CountDownLatch latch, CountDownLatch statusMeetingLatch, CountDownLatch standUpLatch) {
-		super(name, clock, latch, statusMeetingLatch);
+	public Manager(String name, Clock clock, CountDownLatch startLatch, MeetingController meetings) {
+		super(name, clock, startLatch, meetings);
 		this.arrivalTime = 0;
 		this.timeAtLunch = 60;
 		employees = new ArrayList<Thread>();
-		this.standUpLatch = standUpLatch;
 	}
 	
 	public void addEmployee(Employee e) {
@@ -87,10 +85,11 @@ public class Manager extends Worker{
 	 * this is the meeting with all the team leads in the morning
 	 */
 	public void startStandUpMeeting() {
-		standUpLatch.countDown();
+		CountDownLatch standup = this.meetings.getManagerMeeting();
+		standup.countDown();
 		try {
 			//waiting for everyone to get here.
-			standUpLatch.await();
+			standup.await();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
