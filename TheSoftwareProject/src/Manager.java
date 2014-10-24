@@ -53,24 +53,24 @@ public class Manager extends Worker{
 		int standupEnd = clock.getClock();
 		
 		//10am = 120 minutes past 8am
-		this.timeLapse(120 - standupEnd);// Wait until 10am
+		this.timeLapseWorking(120 - standupEnd);// Wait until 10am
 		this.goToMeeting(); //10 AM
-		int meetingOneEnd = clock.getClock();
 		
 		//Work until lunch
 		this.goToLunch(); //12 PM
 		int lunchEnd = clock.getClock();
 		
 		//2pm = 360 minutes past 8am
-		this.timeLapse(360 - lunchEnd);
+		this.timeLapseWorking(360 - lunchEnd);
 		this.goToMeeting(); //2PM
 		int meetingTwoEnd = clock.getClock();
 		
-		this.timeLapse(480 - meetingTwoEnd);
+		this.timeLapseWorking(480 - meetingTwoEnd);
 		this.goToStatusMeeting(); //4PM
 		int statusEnd = clock.getClock();
 		
-		this.timeLapse(540 - statusEnd);
+		//The manager will always stil until 5pm no matter what
+		this.timeLapseWorking(540 - statusEnd);
 		this.leave();
 	}
 	
@@ -91,20 +91,24 @@ public class Manager extends Worker{
 	public void startStandUpMeeting() {
 		CountDownLatch standup = this.meetings.getManagerMeeting();
 		standup.countDown();
+		
+		int timeBefore = clock.getClock();
 		try {
 			//waiting for everyone to get here.
 			standup.await();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		int timeAfter = clock.getClock();
+		this.timeWorked = (timeAfter - timeBefore);
 		
 		System.out.println(clock.getFormattedClock() + "  " + name + " starts the morning standup.");
 		//wait(minute * 15);  //the meeting lasts 15 minutes
 		this.timeLapseWorking(15);
 		System.out.println(clock.getFormattedClock() + "  " + name + " ends the morning standup.");
 		this.meetings.setManagerMeetingOver();
-		synchronized(standup) {
-			standup.notifyAll();
+		synchronized(this.meetings) {
+			this.meetings.notifyAll();
 		}
 	}
 	

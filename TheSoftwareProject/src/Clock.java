@@ -26,16 +26,16 @@ public class Clock {
 		actualHours = new HashMap<Integer, String>();
 		
 		//Stores hour and am/pm
-		actualHours.put(0, "8,am");
-		actualHours.put(1, "9,am");
+		actualHours.put(0, " 8,am");
+		actualHours.put(1, " 9,am");
 		actualHours.put(2, "10,am");
 		actualHours.put(3, "11,am");
 		actualHours.put(4, "12,pm");
-		actualHours.put(5, "1,pm");
-		actualHours.put(6, "2,pm");
-		actualHours.put(7, "3,pm");
-		actualHours.put(8, "4,pm");
-		actualHours.put(9, "5,pm");
+		actualHours.put(5, " 1,pm");
+		actualHours.put(6, " 2,pm");
+		actualHours.put(7, " 3,pm");
+		actualHours.put(8, " 4,pm");
+		actualHours.put(9, " 5,pm");
 	}
 	
 	/**

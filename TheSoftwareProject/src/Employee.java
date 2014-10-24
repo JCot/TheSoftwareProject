@@ -63,20 +63,18 @@ public class Employee extends Worker{
 		//Start of day - employee arrives
 		this.arrive();
 		
-		
-		//Check if the meeting is still going on so that developers that 
-		//show up late won't be stuck waiting for a meeting that's over
-		if(!this.meetings.getManagerMeetingOver()) {
-			System.out.println(clock.getFormattedClock() + "  " + name + " works until team lead is finished with meeting with the manager");
-			//Makes the employee wait until the manager meeting is over
-			synchronized(this.meetings.getManagerMeeting()){
+		//Makes the employee wait until the manager meeting is over
+		synchronized(this.meetings){
+			while(!this.meetings.getManagerMeetingOver()){
 				try {
-					this.meetings.getManagerMeeting().wait();
+					System.out.println(clock.getFormattedClock() + "  " + name + " works until team lead is finished with meeting with the manager");
+					this.meetings.wait();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
 		}
+		
 		
 		//System.err.println("before standup - " + this.name);
 		this.goToTeamStandUpMeeting();
