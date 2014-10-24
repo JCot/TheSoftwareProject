@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 
 /**
  * MeetingController class is a class that stores latches
@@ -11,14 +12,14 @@ public class MeetingController {
 	private CountDownLatch managerMeeting;
 	private boolean managerMeetingOver = false;
 	private CountDownLatch statusMeetingLatch = new CountDownLatch(13);
-	private ArrayList<CountDownLatch> teamStandUpLatches;
+	private ArrayList<CyclicBarrier> teamStandUpLatches;
 	
 	public MeetingController(int numTeams, int sizeOfTeam){
 		this.managerMeeting = new CountDownLatch(4);
-		this.teamStandUpLatches = new ArrayList<CountDownLatch>();
+		this.teamStandUpLatches = new ArrayList<CyclicBarrier>();
 		
 		for(int i = 0; i < numTeams; i++){
-			this.teamStandUpLatches.add(new CountDownLatch(sizeOfTeam));
+			this.teamStandUpLatches.add(new CyclicBarrier(sizeOfTeam));
 		}
 	}
 	
@@ -34,7 +35,7 @@ public class MeetingController {
 		return this.managerMeeting;
 	}
 	
-	public CountDownLatch getTeamStandUpLatch(int teamNum){
+	public CyclicBarrier getTeamStandUpLatch(int teamNum){
 		return teamStandUpLatches.get(teamNum);
 	}
 	

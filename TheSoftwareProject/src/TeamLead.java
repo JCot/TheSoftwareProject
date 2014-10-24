@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 
 
 public class TeamLead extends Employee {
@@ -60,13 +62,14 @@ public class TeamLead extends Employee {
 	
 	@Override
 	public void goToTeamStandUpMeeting(){
-		System.out.println(clock.getFormattedClock() + "  " + name + " waits for team members to arrive");
-		CountDownLatch teamStandup = this.meetings.getTeamStandUpLatch(Integer.parseInt(team)-1);
-		teamStandup.countDown();
+		System.out.println(clock.getFormattedClock() + "  " + name + " waits for team members to arrive to work");
+		CyclicBarrier teamStandup = this.meetings.getTeamStandUpLatch(Integer.parseInt(team)-1);
 		int timeBefore = clock.getClock();
 		try{
 			teamStandup.await();
 		} catch(InterruptedException e){
+			e.printStackTrace();
+		} catch (BrokenBarrierException e) {
 			e.printStackTrace();
 		}
 		
@@ -90,10 +93,15 @@ public class TeamLead extends Employee {
 		int timeAfter = clock.getClock();
 		this.timeWorked += (timeAfter - timeBefore);
 		
-		//Notify the team that the meeting is taking place
-		synchronized(teamStandup){
-			teamStandup.notifyAll();
+		//Wait for employees to enter the conference room
+		try{
+			teamStandup.await();
+		} catch(InterruptedException e){
+			e.printStackTrace();
+		} catch (BrokenBarrierException e) {
+			e.printStackTrace();
 		}
+		
 		
 		
 		System.out.println(clock.getFormattedClock() + "  " + name + " hosts team standup meeting");
