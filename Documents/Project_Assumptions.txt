@@ -12,3 +12,4 @@ of the software project day.
     lunch end time (between 12pm and 4pm)
     and lunch length (between 30 - 60 minutes)
   - The lunch start time and end of workday time can be determined with these parameters
+- Developers do not ask questions before their standup meeting and do not ask questions after the status meeting.
