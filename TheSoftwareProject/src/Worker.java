@@ -38,7 +38,7 @@ public abstract class Worker extends Thread {
 	public void goToLunch(){
 		System.out.println(clock.getFormattedClock() + "  " + name + " goes to lunch for " + this.timeAtLunch+ " minutes");
 		this.timeLapse(this.timeAtLunch);
-		System.out.println(clock.getFormattedClock() + "  " + name + " returns from to lunch");
+		System.out.println(clock.getFormattedClock() + "  " + name + " returns from lunch");
 	}
 	
 	public void arrive(){

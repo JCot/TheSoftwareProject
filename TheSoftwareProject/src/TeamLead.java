@@ -18,7 +18,7 @@ public class TeamLead extends Worker {
 		this.timeAtLunch = rand.nextInt(30 - this.arrivalTime) + 30;
 	}
 	
-	public boolean isBusy(){
+	public synchronized boolean isBusy(){
 		return isBusy;
 	}
 	
@@ -46,7 +46,7 @@ public class TeamLead extends Worker {
 	}
 	
 	//Go to morning meeting with PM
-	public void goToManagerMeeting(){
+	public synchronized void goToManagerMeeting(){
 		isBusy = true;
 		CountDownLatch managerStandup = this.meetings.getManagerMeeting();
 		System.out.println(clock.getFormattedClock() + "  " + name + " knocks on the manager's door.");

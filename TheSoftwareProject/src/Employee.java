@@ -93,18 +93,19 @@ public class Employee extends Worker{
 		}
 		
 		
-		//System.err.println("before standup - " + this.name);
 		this.goToTeamStandUpMeeting();
 		
 		int index = 0;
 		for(int i = 0; i < questionTimes.size(); i++){
+			//If the question is meant to be asked later
 			if(questionTimes.get(i) > this.lunchEndTime - this.timeAtLunch){
-				index = i + 1;
+				index = i;
 				break;
 			}
 			
 			else{
 				int askQuestionTime = questionTimes.get(i);
+				index = i + 1;
 				
 				synchronized(clock) {
 					while (clock.getClock() < askQuestionTime) {
@@ -116,18 +117,21 @@ public class Employee extends Worker{
 						}
 					}
 				}
-				//TODO ask team lead a question. Need to figure out how to tell employee who team lead is.
-				if(!lead.isBusy()){
-					askQuestion();
-				}
-				else{
-					synchronized(lead){
-						try{
-							lead.wait();
-							askQuestion();
-						}
-						catch(InterruptedException e){}
+				synchronized(lead){
+					int clockBefore = clock.getClock();
+					if(lead.isBusy()) {
+						System.out.println(clock.getFormattedClock() + "  " + name + " notices that the team lead is not available and will continue working until he is available");
 					}
+					while(lead.isBusy()) {
+						try {
+							lead.wait();
+						} catch(InterruptedException e){
+							e.printStackTrace();
+						}
+					}
+					int clockAfter = clock.getClock();
+					this.timeWorked += (clockAfter - clockBefore);
+					askQuestion();
 				}
 			}
 		}
@@ -158,28 +162,32 @@ public class Employee extends Worker{
 					}
 				}
 			}
-			//TODO ask team lead a question. Need to figure out how to tell employee who team lead is.
-			if(!lead.isBusy()){
-				askQuestion();
-			}
-			else{
-				synchronized(lead){
-					try{
-						lead.wait();
-						askQuestion();
-					}
-					catch(InterruptedException e){}
+			synchronized(lead){
+				int clockBefore = clock.getClock();
+				if(lead.isBusy()) {
+					System.out.println(clock.getFormattedClock() + "  " + name + " wants to ask a question but notices that the team lead is not available and will continue working until he is available");
 				}
+				while(lead.isBusy()) {
+					try {
+						lead.wait();
+					} catch(InterruptedException e){
+						e.printStackTrace();
+					}
+				}
+				int clockAfter = clock.getClock();
+				this.timeWorked += (clockAfter - clockBefore);
+				askQuestion();
 			}
 		}
 		
 		int noMoreQuestions = clock.getClock();
 		
-		//4pm = 480
+		//4pm = 480 = 8 hours
 		this.timeLapseWorking(480-noMoreQuestions);
 		this.goToStatusMeeting();
 		//Add random time until 4:15?
 		if(480 > timeWorked){
+			System.out.println("time left: " + name + " " +String.valueOf(480 - timeWorked));
 			this.timeLapseWorking(480 - timeWorked);
 		}
 		this.leave();
