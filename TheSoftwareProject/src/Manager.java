@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -10,6 +11,8 @@ import java.util.concurrent.CountDownLatch;
 public class Manager extends Worker{
 	private List<Thread> employees;
 	private List<Thread> teamLeads;
+	private boolean isBusy = false;
+	private LinkedList<TeamLead> questionQueue = new LinkedList<TeamLead>();
 	
 	/**
 	 * accumulate statistics on the total amount of time across the manager
@@ -37,15 +40,34 @@ public class Manager extends Worker{
 		teamLeads.add(l);
 	}
 	
-	public void answerQuestion() {
-		System.out.println(clock.getFormattedClock() + name + " answers a question");
-		try {
-			wait(minute * 10);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public boolean isBusy(){
+		return isBusy;
+	}
+	
+	public synchronized void answerQuestion() {
+		isBusy = true;
+		System.out.println(clock.getFormattedClock() + "  " + name + " answers a question");
+		this.timeLapse(10);
+		isBusy = false;
+		this.notifyAll();
+		
 		return;
+	}
+	
+	public void getInLine(TeamLead lead){
+		questionQueue.add(lead);
+	}
+	
+	public boolean isFirst(TeamLead lead){
+		return lead.equals(questionQueue.getFirst());
+	}
+	
+	@Override
+	public synchronized void goToLunch(){
+		isBusy = true;
+		super.goToLunch();
+		isBusy = false;
+		this.notifyAll();
 	}
 	
 	/**
@@ -94,10 +116,13 @@ public class Manager extends Worker{
 	/**
 	 * There are 2 meetings, one at 10 and one at 2, they are both 1 hour
 	 */
-	public void goToMeeting(){
+	public synchronized void goToMeeting(){
+		isBusy = true;
 		System.out.println(clock.getFormattedClock() + "  " + name + " goes to a meeting");
 		this.timeLapseWorking(60); 
 		System.out.println(clock.getFormattedClock() + "  " + name + " returns from a meeting");
+		isBusy = false;
+		this.notifyAll();
 	}
 	
 	

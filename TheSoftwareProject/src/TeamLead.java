@@ -8,14 +8,16 @@ public class TeamLead extends Worker {
 	private String team;
 	private String devNumber;
 	private boolean isBusy = false;
+	private Manager manager;
 	
-	public TeamLead(String name, String devNumber, String teamNumber, Clock clock, CountDownLatch start, MeetingController meetings){
+	public TeamLead(String name, String devNumber, String teamNumber, Clock clock, CountDownLatch start, MeetingController meetings, Manager manager){
 		super(name, clock, start, meetings);
 		this.team = teamNumber;
 		this.devNumber = devNumber;
 		this.arrivalTime = rand.nextInt(30);
 		this.lunchEndTime = rand.nextInt(480 - 240) + 240;
 		this.timeAtLunch = rand.nextInt(30 - this.arrivalTime) + 30;
+		this.manager = manager;
 	}
 	
 	public synchronized boolean isBusy(){
@@ -24,7 +26,7 @@ public class TeamLead extends Worker {
 	
 	//Try and answer a team members question
 	public synchronized void answerQuestion(){
-		boolean canAnswer = true;//(rand.nextInt(1) == 1);
+		boolean canAnswer = (rand.nextInt(1) == 1);
 		
 		if(canAnswer){
 			System.out.println(clock.getFormattedClock() + "  " + name + " answers a question");
@@ -42,7 +44,25 @@ public class TeamLead extends Worker {
 	
 	@Override
 	public void askQuestion(){
+		manager.getInLine(this);
+		
+		synchronized(manager){
+			if(manager.isBusy() || !manager.isFirst(this)){
+				System.out.println(clock.getFormattedClock() + "  " + name + " waits in line to ask a question");
+			}
+			
+			while(manager.isBusy() || !manager.isFirst(this)){
+				try{
+					manager.wait();
+				}
+				catch(InterruptedException e){
+					e.printStackTrace();
+				}
+			}
+		}
+		
 		System.out.println(clock.getFormattedClock() + " " + name + " asks the manager a question");
+		manager.answerQuestion();
 	}
 	
 	//Go to morning meeting with PM

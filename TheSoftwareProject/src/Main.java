@@ -27,7 +27,7 @@ public class Main {
 		//and M is the employee's number on the team (1-4,
 		//where 1 is the team lead)
 		for (int i = 1; i <= numTeams; i++) {
-			TeamLead lead = new TeamLead("Developer " + i + "1", "1", Integer.toString(i), clock, startLatch, meetings);
+			TeamLead lead = new TeamLead("Developer " + i + "1", "1", Integer.toString(i), clock, startLatch, meetings, bob);
 			employees.add(lead);
 			bob.addTeamLead(lead);
 			for (int j = 2; j<=numDevsPerTeam; j++) { 
