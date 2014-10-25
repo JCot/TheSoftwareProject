@@ -96,10 +96,10 @@ public class Employee extends Worker{
 		//System.err.println("before standup - " + this.name);
 		this.goToTeamStandUpMeeting();
 		
-		//TODO asking questions
-		//Makes the employee work before going off to lunch
+		int index = 0;
 		for(int i = 0; i < questionTimes.size(); i++){
 			if(questionTimes.get(i) > this.lunchEndTime - this.timeAtLunch){
+				index = i + 1;
 				break;
 			}
 			
@@ -117,7 +117,18 @@ public class Employee extends Worker{
 					}
 				}
 				//TODO ask team lead a question. Need to figure out how to tell employee who team lead is.
-				askQuestion();
+				if(!lead.isBusy()){
+					askQuestion();
+				}
+				else{
+					synchronized(lead){
+						try{
+							lead.wait();
+							askQuestion();
+						}
+						catch(InterruptedException e){}
+					}
+				}
 			}
 		}
 		
@@ -132,10 +143,40 @@ public class Employee extends Worker{
 			}
 		}
 		this.goToLunch();
-		int backFromLunch = clock.getClock();
+		//int backFromLunch = clock.getClock();
+		
+		for(int i = index; i < questionTimes.size(); i++){
+			int askQuestionTime = questionTimes.get(i);
+
+			synchronized(clock) {
+				while (clock.getClock() < askQuestionTime) {
+					try {
+						clock.wait();
+						this.timeWorked++;
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			//TODO ask team lead a question. Need to figure out how to tell employee who team lead is.
+			if(!lead.isBusy()){
+				askQuestion();
+			}
+			else{
+				synchronized(lead){
+					try{
+						lead.wait();
+						askQuestion();
+					}
+					catch(InterruptedException e){}
+				}
+			}
+		}
+		
+		int noMoreQuestions = clock.getClock();
 		
 		//4pm = 480
-		this.timeLapseWorking(480-backFromLunch);
+		this.timeLapseWorking(480-noMoreQuestions);
 		this.goToStatusMeeting();
 		//Add random time until 4:15?
 		if(480 > timeWorked){

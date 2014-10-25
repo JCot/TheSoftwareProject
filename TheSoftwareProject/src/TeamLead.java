@@ -7,6 +7,7 @@ import java.util.concurrent.CyclicBarrier;
 public class TeamLead extends Worker {
 	private String team;
 	private String devNumber;
+	private boolean isBusy = false;
 	
 	public TeamLead(String name, String devNumber, String teamNumber, Clock clock, CountDownLatch start, MeetingController meetings){
 		super(name, clock, start, meetings);
@@ -17,8 +18,12 @@ public class TeamLead extends Worker {
 		this.timeAtLunch = rand.nextInt(30 - this.arrivalTime) + 30;
 	}
 	
+	public boolean isBusy(){
+		return isBusy;
+	}
+	
 	//Try and answer a team members question
-	public void answerQuestion(){
+	public synchronized void answerQuestion(){
 		boolean canAnswer = true;//(rand.nextInt(1) == 1);
 		
 		if(canAnswer){
@@ -28,7 +33,10 @@ public class TeamLead extends Worker {
 		
 		else{
 			System.out.println(clock.getFormattedClock() + "  " + name + " cannot answer a question. Takes question to manager");
+			isBusy = true;
 			askQuestion();
+			isBusy = false;
+			this.notifyAll();
 		}
 	}
 	
@@ -39,6 +47,7 @@ public class TeamLead extends Worker {
 	
 	//Go to morning meeting with PM
 	public void goToManagerMeeting(){
+		isBusy = true;
 		CountDownLatch managerStandup = this.meetings.getManagerMeeting();
 		System.out.println(clock.getFormattedClock() + "  " + name + " knocks on the manager's door.");
 		
@@ -56,6 +65,7 @@ public class TeamLead extends Worker {
 		
 		this.timeLapseWorking(15);
 		
+		isBusy = false;
 		timeInMeetings += 15;
 	}
 	
@@ -107,6 +117,14 @@ public class TeamLead extends Worker {
 		System.out.println(clock.getFormattedClock() + "  " + name + " ends team standup meeting");
 		available.release();
 		
+	}
+	
+	@Override
+	public synchronized void goToLunch(){
+		isBusy = true;
+		super.goToLunch();
+		isBusy = false;
+		this.notifyAll();
 	}
 	
 	@Override
