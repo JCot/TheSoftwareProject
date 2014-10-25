@@ -95,14 +95,18 @@ public class Employee extends Worker{
 		
 		this.goToTeamStandUpMeeting();
 		
+		
 		int index = 0;
+		
 		for(int i = 0; i < questionTimes.size(); i++){
+			//Define a before time for each iteration
+			int clockBefore = clock.getClock();
+			
 			//If the question is meant to be asked later
 			if(questionTimes.get(i) > this.lunchEndTime - this.timeAtLunch){
 				index = i;
 				break;
 			}
-			
 			else{
 				int askQuestionTime = questionTimes.get(i);
 				index = i + 1;
@@ -111,14 +115,13 @@ public class Employee extends Worker{
 					while (clock.getClock() < askQuestionTime) {
 						try {
 							clock.wait();
-							this.timeWorked++;
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
 					}
 				}
 				synchronized(lead){
-					int clockBefore = clock.getClock();
+					
 					if(lead.isBusy()) {
 						System.out.println(clock.getFormattedClock() + "  " + name + " notices that the team lead is not available and will continue working until he is available");
 					}
@@ -129,11 +132,12 @@ public class Employee extends Worker{
 							e.printStackTrace();
 						}
 					}
-					int clockAfter = clock.getClock();
-					this.timeWorked += (clockAfter - clockBefore);
 					askQuestion();
 				}
 			}
+			//Add the time to complete each iteration
+			int clockAfter = clock.getClock();
+			this.timeWorked += (clockAfter - clockBefore);
 		}
 		
 		synchronized(clock) {
@@ -150,20 +154,20 @@ public class Employee extends Worker{
 		//int backFromLunch = clock.getClock();
 		
 		for(int i = index; i < questionTimes.size(); i++){
+			//Define a before time for each iteration
+			int clockBefore = clock.getClock();
 			int askQuestionTime = questionTimes.get(i);
 
 			synchronized(clock) {
 				while (clock.getClock() < askQuestionTime) {
 					try {
 						clock.wait();
-						this.timeWorked++;
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 				}
 			}
 			synchronized(lead){
-				int clockBefore = clock.getClock();
 				if(lead.isBusy()) {
 					System.out.println(clock.getFormattedClock() + "  " + name + " wants to ask a question but notices that the team lead is not available and will continue working until he is available");
 				}
@@ -174,10 +178,11 @@ public class Employee extends Worker{
 						e.printStackTrace();
 					}
 				}
-				int clockAfter = clock.getClock();
-				this.timeWorked += (clockAfter - clockBefore);
-				askQuestion();
 			}
+			//Add the time to complete each iteration
+			int clockAfter = clock.getClock();
+			this.timeWorked += (clockAfter - clockBefore);
+			askQuestion();
 		}
 		
 		int noMoreQuestions = clock.getClock();
@@ -187,7 +192,7 @@ public class Employee extends Worker{
 		this.goToStatusMeeting();
 		//Add random time until 4:15?
 		if(480 > timeWorked){
-			System.out.println("time left: " + name + " " +String.valueOf(480 - timeWorked));
+			//System.out.println("time left: " + name + " " +String.valueOf(480 - timeWorked));
 			this.timeLapseWorking(480 - timeWorked);
 		}
 		this.leave();
