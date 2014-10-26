@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
@@ -37,13 +36,14 @@ public class TeamLead extends Worker {
 	
 	//Try and answer a team members question
 	public void answerQuestion(Employee developer){
-		boolean canAnswer = (rand.nextInt(1) == 1);
+		boolean canAnswer = (rand.nextInt(2) == 1);
 		synchronized (this) {
 			isBusy = true;
 		}
 		//If it is greater than 4pm then any remaining questions must wait until tomorrow
 		if(clock.getClock() >= 480){
-			System.out.println(clock.getFormattedClock() + "  " + name + " requests that the question asked by " + developer.name + " is held off until the next work day");
+			System.out.println(clock.getFormattedClock() + "  " + name + " requests that the question asked by " + developer.name + " is held off until the next work day.");
+			developer.setQuestionAnswered();
 			synchronized (this) {
 				isBusy = false;
 				this.notifyAll();
@@ -52,14 +52,15 @@ public class TeamLead extends Worker {
 		}
 		
 		if(canAnswer){
-			System.out.println(clock.getFormattedClock() + "  " + name + " answers a question for " + developer.name );
+			System.out.println(clock.getFormattedClock() + "  " + name + " answers a question for " + developer.name +".");
+			developer.setQuestionAnswered();
 			synchronized (this) {
 				isBusy = false;
 				this.notifyAll();
 			}
 			return;
 		} else {
-			System.out.println(clock.getFormattedClock() + "  " + name + " cannot answer " + developer.name  +"'s question.");
+			System.out.println(clock.getFormattedClock() + "  " + name + " attempts to answer " + developer.name  +"'s question but can't answer it.");
 			questionAnswered = false;
 			this.askQuestion();
 			developer.setQuestionAnswered();
@@ -73,9 +74,9 @@ public class TeamLead extends Worker {
 			isBusy = true;
 		}
 		if(manager.isBusy()){
-			System.out.println(clock.getFormattedClock() + "  " + name + " waits in line to ask a question");
+			System.out.println(clock.getFormattedClock() + "  " + name + " waits in line to ask the manager a question.");
 		} else {
-			System.out.println(clock.getFormattedClock() + "  " + name + " asks the manager a question");
+			System.out.println(clock.getFormattedClock() + "  " + name + " asks the manager a question.");
 		}
 		manager.getInLine(this);
 		synchronized(manager) {
@@ -124,7 +125,7 @@ public class TeamLead extends Worker {
 	
 	@Override
 	public void goToTeamStandUpMeeting(){
-		System.out.println(clock.getFormattedClock() + "  " + name + " waits for team members to arrive to work");
+		System.out.println(clock.getFormattedClock() + "  " + name + " waits for team members to arrive to work.");
 		CyclicBarrier teamStandup = this.meetings.getTeamStandUpLatch(Integer.parseInt(team)-1);
 		int timeBefore = clock.getClock();
 		try{
@@ -139,12 +140,12 @@ public class TeamLead extends Worker {
 		try {
 			boolean roomAvailable = available.tryAcquire();
 			if(roomAvailable) {
-				System.out.println(clock.getFormattedClock() + "  " + name + " secures a spot in the conference room");
+				System.out.println(clock.getFormattedClock() + "  " + name + " secures a spot in the conference room.");
 			} else {
 				//If that didn't work then wait until it can be acquired
-				System.out.println(clock.getFormattedClock() + "  " + name + " waits for the conference room to be available");
+				System.out.println(clock.getFormattedClock() + "  " + name + " waits for the conference room to be available.");
 				available.acquire();
-				System.out.println(clock.getFormattedClock() + "  " + name + " secures a spot in the conference room");
+				System.out.println(clock.getFormattedClock() + "  " + name + " secures a spot in the conference room.");
 			}
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
@@ -164,10 +165,10 @@ public class TeamLead extends Worker {
 		
 		
 		
-		System.out.println(clock.getFormattedClock() + "  " + name + " hosts team standup meeting");
+		System.out.println(clock.getFormattedClock() + "  " + name + " hosts team standup meeting.");
 		timeInMeetings += 15;
 		this.timeLapseWorking(15);	
-		System.out.println(clock.getFormattedClock() + "  " + name + " ends team standup meeting");
+		System.out.println(clock.getFormattedClock() + "  " + name + " ends team standup meeting.");
 		available.release();
 		
 	}
@@ -190,8 +191,24 @@ public class TeamLead extends Worker {
 		this.goToManagerMeeting();
 		this.goToTeamStandUpMeeting();
 		
-		//TODO asking questions
+		this.recieveQuestionBeforeLunch();
+
+		this.goToLunch();
+		
+		this.receieveQuestionsAfterLunch();
+		
+		this.goToStatusMeeting();
+		
+		//Work the remainder of time if necessary
+		if(480 > timeWorked){
+			this.timeLapseWorking(480 - timeWorked);
+		}
+		this.leave();
+	}
+
+	private void recieveQuestionBeforeLunch(){
 		while(clock.getClock() < (this.lunchEndTime - this.timeAtLunch)){
+			//If there are no questions simply work
 			while(this.questionQueue.isEmpty()){
 				if(clock.getClock() >= (this.lunchEndTime - this.timeAtLunch)){
 					break;
@@ -206,9 +223,11 @@ public class TeamLead extends Worker {
 					this.timeWorked++;
 				}
 			}
+			//Otherwise answer all questions in the queue
 			while(!this.questionQueue.isEmpty()){
+				//Check if its lunch time and take a break if it is
 				if(clock.getClock() >= (this.lunchEndTime - this.timeAtLunch)){
-					System.out.println(clock.getFormattedClock() + "  " + name + " wants to go to lunch and will answer questions when he returns");
+					System.out.println(clock.getFormattedClock() + "  " + name + " wants to go to lunch and will answer questions when he returns.");
 					break;
 				}
 				int timeBefore = clock.getClock();
@@ -218,14 +237,13 @@ public class TeamLead extends Worker {
 				this.timeWorked += timeAfter-timeBefore;
 			}
 		}
-
-		
-		this.goToLunch();
-		
-		
-		//4pm = 480
+	}
+	
+	private void receieveQuestionsAfterLunch(){
+		//Process until 4pm (4pm = 480 simulated minutes)
 		while(clock.getClock() < (480)){
 			while(this.questionQueue.isEmpty()){
+				//Go to the status meeting if it's 4
 				if(clock.getClock() >= 480) {
 					break;
 				}
@@ -239,6 +257,8 @@ public class TeamLead extends Worker {
 					this.timeWorked++;
 				}
 			}
+			//Answer questions in the queue until 4
+			//(answerQuestion will check if its 4pm)
 			while(!this.questionQueue.isEmpty()){
 				int timeBefore = clock.getClock();
 				Employee dev = this.questionQueue.remove();
@@ -247,13 +267,5 @@ public class TeamLead extends Worker {
 				this.timeWorked += timeAfter-timeBefore;
 			}
 		}
-		
-		//this.timeLapseWorking(480-backFromLunch);
-		this.goToStatusMeeting();
-		if(480 > timeWorked){
-			this.timeLapseWorking(480 - timeWorked);
-		}
-		this.leave();
 	}
-
 }

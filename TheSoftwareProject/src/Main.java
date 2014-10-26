@@ -8,11 +8,19 @@ import java.util.concurrent.CountDownLatch;
  *
  */
 public class Main {
-	private final static int day = 6600; //milliseconds, (9 hour work day)
-	private final static int minute = 10; //milliseconds
+	private final static int day = 5400; //time it takes to simulate a day in milliseconds
+	                                     //(must represent a 9 hour work day at a minimum)
+	private final static int minute = 10; //time it takes to simulate a minute in milliseconds
 	
-	private final static int numTeams = 3;
-	private final static int numDevsPerTeam = 4;
+	private final static int numTeams = 3; //Number of teams
+	private final static int numDevsPerTeam = 4; //Number of Devs per team (including leads)
+	
+	protected final static int numRooms = 1; //Number of conference rooms available
+	
+	protected final static int minDevQues = 0; //Minimum amount of questions a dev can ask
+	protected final static int maxDevQues = 2; //Maximum amount questions a dev can ask
+	
+	protected final static int managerQuesTime = 10; //Time it takes for a manager to answer each question
 	
 	public static void main(String[] args) {
 		CountDownLatch startLatch = new CountDownLatch(1);

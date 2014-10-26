@@ -122,7 +122,7 @@ public class Manager extends Worker{
 				isBusy = true;
 			}
 			System.out.println(clock.getFormattedClock() + "  " + name + " is asked a question by " + askingThread.name);
-			this.timeLapseWorking(10);
+			this.timeLapseWorking(Main.managerQuesTime);
 			System.out.println(clock.getFormattedClock() + "  " + name + " finished answering a question for " + askingThread.name);
 			synchronized(this){
 				askingThread.setQuestionAnswered();
@@ -142,130 +142,21 @@ public class Manager extends Worker{
 		System.out.println(clock.getFormattedClock() + "  " + name + " performs planning and administrative activities");
 		this.startStandUpMeeting(); //ASAP
 		
-		//10am = 120 minutes past 8am
-		while(clock.getClock() < (120)){
-			while(this.questionQueue.isEmpty()){
-				if(clock.getClock() >= 120) {
-					break;
-				}
-				//Makes the employee work
-				synchronized(clock) {
-					try {
-						clock.wait();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					this.timeWorked++;
-				}
-			}
-			while(!this.questionQueue.isEmpty()){
-				if(clock.getClock() >= 120) {
-					System.out.println(clock.getFormattedClock() + "  " + name + " has a meeting to go to and will continue answering questions later");
-					break;
-				}
-				int timeBefore = clock.getClock();
-				TeamLead lead = this.questionQueue.remove();
-				this.answerQuestion(lead);
-				int timeAfter = clock.getClock();
-				this.timeWorked += timeAfter-timeBefore;
-			}
-		}
-		
+		this.receiveQuestionsBeforeFirstMeeting();
 		this.goToMeeting(); //10 AM
 		
-		while(clock.getClock() < (this.lunchEndTime - this.timeAtLunch)){
-			while(this.questionQueue.isEmpty()){
-				if(clock.getClock() >= (this.lunchEndTime - this.timeAtLunch)) {
-					break;
-				}
-				//Makes the employee work
-				synchronized(clock) {
-					try {
-						clock.wait();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					this.timeWorked++;
-				}
-			}
-			while(!this.questionQueue.isEmpty()){
-				if(clock.getClock() >= (this.lunchEndTime - this.timeAtLunch)) {
-					System.out.println(clock.getFormattedClock() + "  " + name + " wants to go to lunch and will continue answering questions later");
-					break;
-				}
-				int timeBefore = clock.getClock();
-				TeamLead lead = this.questionQueue.remove();
-				this.answerQuestion(lead);
-				int timeAfter = clock.getClock();
-				this.timeWorked += timeAfter-timeBefore;
-			}
-		}
 		
-	
+		this.receiveQuestionsBeforeLunch();
 		this.goToLunch(); //12 PM
 
-		
-		//2pm = 360 minutes past 8am
-		while(clock.getClock() < (360)){
-			while(this.questionQueue.isEmpty()){
-				if(clock.getClock() >= 360) {
-					break;
-				}
-				//Makes the employee work
-				synchronized(clock) {
-					try {
-						clock.wait();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					this.timeWorked++;
-				}
-			}
-			while(!this.questionQueue.isEmpty()){
-				if(clock.getClock() >= 360) {
-					System.out.println(clock.getFormattedClock() + "  " + name + " has a meeting to go to and will continue answering questions later");
-					break;
-				}
-				int timeBefore = clock.getClock();
-				TeamLead lead = this.questionQueue.remove();
-				this.answerQuestion(lead);
-				int timeAfter = clock.getClock();
-				this.timeWorked += timeAfter-timeBefore;
-			}
-		}
-		//this.timeLapseWorking(360 - lunchEnd);
+		this.receiveQuestionsBeforeSecondMeeting();
 		this.goToMeeting(); //2PM
-		//int meetingTwoEnd = clock.getClock();
 		
-		while(clock.getClock() < (480)){
-			while(this.questionQueue.isEmpty()){
-				if(clock.getClock() >= 480) {
-					break;
-				}
-				//Makes the employee work
-				synchronized(clock) {
-					try {
-						clock.wait();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					this.timeWorked++;
-				}
-			}
-			while(!this.questionQueue.isEmpty()){
-				int timeBefore = clock.getClock();
-				TeamLead lead = this.questionQueue.remove();
-				this.answerQuestion(lead);
-				int timeAfter = clock.getClock();
-				this.timeWorked += timeAfter-timeBefore;
-			}
-		}
-		
-		//this.timeLapseWorking(480 - meetingTwoEnd);
+		this.receiveQuestionsBeforeStatusMeeting();
 		this.goToStatusMeeting(); //4PM
-		int statusEnd = clock.getClock();
 		
-		//The manager will always stil until 5pm no matter what
+		//The manager will always work until 5pm no matter what
+		int statusEnd = clock.getClock();
 		this.timeLapseWorking(540 - statusEnd);
 		this.leave();
 	}
@@ -301,4 +192,130 @@ public class Manager extends Worker{
 		
 	}
 	
+	private void receiveQuestionsBeforeFirstMeeting() {
+		//10am = 120 minutes past 8am
+		while(clock.getClock() < (120)){
+			while(this.questionQueue.isEmpty()){
+				//Break so the manager can go to his meeting
+				if(clock.getClock() >= 120) {
+					break;
+				}
+				//Makes the manager work
+				synchronized(clock) {
+					try {
+						clock.wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					this.timeWorked++;
+				}
+			}
+			while(!this.questionQueue.isEmpty()){
+				//Make the manager go to his meeting and ask questions later
+				if(clock.getClock() >= 120) {
+					System.out.println(clock.getFormattedClock() + "  " + name + " has a meeting to go to and will continue answering questions later");
+					break;
+				}
+				int timeBefore = clock.getClock();
+				TeamLead lead = this.questionQueue.remove();
+				this.answerQuestion(lead);
+				int timeAfter = clock.getClock();
+				this.timeWorked += timeAfter-timeBefore;
+			}
+		}
+	}
+	
+	private void receiveQuestionsBeforeLunch() {
+		//While it is not the manager's lunch time
+		while(clock.getClock() < (this.lunchEndTime - this.timeAtLunch)){
+			while(this.questionQueue.isEmpty()){
+				//Break for lunch
+				if(clock.getClock() >= (this.lunchEndTime - this.timeAtLunch)) {
+					break;
+				}
+				//Makes the manager work
+				synchronized(clock) {
+					try {
+						clock.wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					this.timeWorked++;
+				}
+			}
+			while(!this.questionQueue.isEmpty()){
+				//Have the manager take a break for lunch then continue to answer questions
+				if(clock.getClock() >= (this.lunchEndTime - this.timeAtLunch)) {
+					System.out.println(clock.getFormattedClock() + "  " + name + " wants to go to lunch and will continue answering questions later");
+					break;
+				}
+				int timeBefore = clock.getClock();
+				TeamLead lead = this.questionQueue.remove();
+				this.answerQuestion(lead);
+				int timeAfter = clock.getClock();
+				this.timeWorked += timeAfter-timeBefore;
+			}
+		}
+	}
+	
+	private void receiveQuestionsBeforeSecondMeeting() {
+		//2pm = 360 minutes past 8am
+		while(clock.getClock() < (360)){
+			while(this.questionQueue.isEmpty()){
+				//Break for the meeting
+				if(clock.getClock() >= 360) {
+					break;
+				}
+				//Makes the employee work
+				synchronized(clock) {
+					try {
+						clock.wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					this.timeWorked++;
+				}
+			}
+			while(!this.questionQueue.isEmpty()){
+				//Hold off answering questions until after the meeting
+				if(clock.getClock() >= 360) {
+					System.out.println(clock.getFormattedClock() + "  " + name + " has a meeting to go to and will continue answering questions later");
+					break;
+				}
+				int timeBefore = clock.getClock();
+				TeamLead lead = this.questionQueue.remove();
+				this.answerQuestion(lead);
+				int timeAfter = clock.getClock();
+				this.timeWorked += timeAfter-timeBefore;
+			}
+		}
+	}
+	
+	private void receiveQuestionsBeforeStatusMeeting() {
+		while(clock.getClock() < (480)){
+			while(this.questionQueue.isEmpty()){
+				//Break for the status meeting
+				if(clock.getClock() >= 480) {
+					break;
+				}
+				//Makes the employee work
+				synchronized(clock) {
+					try {
+						clock.wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					this.timeWorked++;
+				}
+			}
+			while(!this.questionQueue.isEmpty()){
+				int timeBefore = clock.getClock();
+				TeamLead lead = this.questionQueue.remove();
+				//answerQuestion checks if it is 4pm, and will return accordingly
+				this.answerQuestion(lead);
+				int timeAfter = clock.getClock();
+				this.timeWorked += timeAfter-timeBefore;
+			}
+		}
+	}
 }

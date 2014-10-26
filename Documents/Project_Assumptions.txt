@@ -2,22 +2,30 @@ This is the list of assumptions that we are making for the implementation
 of the software project day.
 -------------------------------------------------------------------------------
 
-- An employee asking a question is still considered to be working (even if they
-    are waiting) and will not leave for lunch while
-    asking a question or waiting for one to be answered.
+- Arrival time is strictly between 8 and 8:30am but employees can arrive at a random
+  time between that interval
 
-- Everyone is finished with lunch by 4pm unless a developer had a late lunch due to someone asking a question.
+- Time at lunch is also strictly between 30 minutes and 1 hour, but each employee can have a different
+  amount of lunch time and different lunch times.
+
+- Everyone is finished with lunch between 12pm and 4pm unless a developer had a late lunch due to someone asking a question.
   In that case the developer will go to lunch ASAP and will return to work no later than
-  4:10pm which will still be on time for the status meeting.
+  4:15pm so that they can  still be on time for the status meeting.
 
 - The time between 4pm and 4:15pm is reserved as the time to finish answering questions and wait for people to get back from late
   lunches. Otherwise, developers with no questions and at work will go to the status meeting at 4pm.
 
-- The 10 minutes in which a manager needs to answer a question will not be configurable since the manager is 
-  very knowledgeable about software and can answer any question that may come up in that amount of time.
+- Employees will always leave when they have worked eight hours and will not work overtime.
+
+- An employee asking a question is still considered to be working (even if they
+    are waiting) and will not leave for lunch while
+    asking a question or waiting for one to be answered.
 
 - Developers and team leads will only ask one question at a time and wait for that question to be answered before
   they ask the next question.
+
+- Team leads and the manager all have a queue in which they address questions and can receive questions in their
+  queues even if they are not available at the moment the question was answered
 
 - Any questions asked to a team lead or the manager past 4pm are requested to be put off until the next work day
   so that the status meeting is not held up.
@@ -26,14 +34,9 @@ of the software project day.
   so that they can start/wrap up work.
 
 - Parameters to be used in the program
-  - Times - defualt parameter for any time is a random time as follows
-      Arrival time: between 8 and 8:30am, 
-      Lunch end time: between 12pm and 4pm,
-      Lunch length: between 30 - 60 minutes
-      Note: The lunch start time and end of workday time can be determined with these parameters
   - Number of Teams: default is 3
   - Number of Developers per team: default is 4
   - Number of Questions asked during the day
-      Team Leads: default is 0 questions or 1 question (since they are experienced)
-      Developers: defualt is between 1 question ans 3 questions (due to the lack of experience)
+      Team Leads: default is either 0 questions or 1 question (since they are experienced)
+      Developers: defualt is between 1 question and 2 questions (due to the lack of experience)
   - Number of Conference Rooms: default is 1

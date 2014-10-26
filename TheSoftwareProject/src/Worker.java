@@ -16,8 +16,7 @@ public abstract class Worker extends Thread {
 	protected int timeInMeetings = 0;
 	protected int timeWorked = 0;
 	
-	protected static final int NUM_CONFERENCE_ROOMS = 1;
-	protected static final Semaphore available = new Semaphore(NUM_CONFERENCE_ROOMS, true);
+	protected static final Semaphore available = new Semaphore(Main.numRooms, true);
 	protected final int day = 4800; //milliseconds
 	protected final int minute = 10; //milliseconds
 	
