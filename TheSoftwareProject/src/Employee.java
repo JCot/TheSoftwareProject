@@ -39,7 +39,15 @@ public class Employee extends Worker{
 	@Override
 	public void askQuestion(){
 		System.out.println(clock.getFormattedClock() + "  " + name + " asks their team lead a question");
-		lead.answerQuestion();
+		lead.getInLine(this);
+		//Wait for the lead to get an answer
+		synchronized(lead){
+			try {
+				lead.wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	//Go to morning team stand-up meeting
@@ -121,7 +129,6 @@ public class Employee extends Worker{
 					}
 				}
 				synchronized(lead){
-					
 					if(lead.isBusy()) {
 						System.out.println(clock.getFormattedClock() + "  " + name + " notices that the team lead is not available and will continue working until he is available");
 					}
@@ -132,8 +139,15 @@ public class Employee extends Worker{
 							e.printStackTrace();
 						}
 					}
-					askQuestion();
 				}
+				//Don't ask anymore questions if it's time for lunch
+				if(clock.getClock() >= this.lunchEndTime - this.timeAtLunch){
+					int clockAfter = clock.getClock();
+					this.timeWorked += (clockAfter - clockBefore);
+					index = i;
+					break;
+				}
+				askQuestion();
 			}
 			//Add the time to complete each iteration
 			int clockAfter = clock.getClock();
@@ -179,16 +193,29 @@ public class Employee extends Worker{
 					}
 				}
 			}
+			
+			//Don't ask anymore questions if it's time for the status meeting
+			if(clock.getClock() >= 480){
+				System.out.println(clock.getFormattedClock() + "  " + name + " wants to ask a question but will hold off until tomorrow");
+				int clockAfter = clock.getClock();
+				this.timeWorked += (clockAfter - clockBefore);
+				break;
+			}
+			askQuestion();
+			
 			//Add the time to complete each iteration
 			int clockAfter = clock.getClock();
 			this.timeWorked += (clockAfter - clockBefore);
-			askQuestion();
 		}
 		
 		int noMoreQuestions = clock.getClock();
 		
 		//4pm = 480 = 8 hours
-		this.timeLapseWorking(480-noMoreQuestions);
+		if(480 > noMoreQuestions){
+			//Work until 4pm
+			this.timeLapseWorking(480-noMoreQuestions);
+		}
+		
 		this.goToStatusMeeting();
 		//Add random time until 4:15?
 		if(480 > timeWorked){

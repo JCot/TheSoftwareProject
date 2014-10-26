@@ -36,6 +36,7 @@ public class Clock {
 		actualHours.put(7, " 3,pm");
 		actualHours.put(8, " 4,pm");
 		actualHours.put(9, " 5,pm");
+		actualHours.put(10," 6,pm");
 	}
 	
 	/**

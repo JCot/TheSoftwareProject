@@ -6,10 +6,32 @@ of the software project day.
     are waiting for the project manager, in which case they will go back to working
     until he is available) and will not leave for lunch while
     asking a question or waiting for one to be answered.
-- Everyone is finished with lunch by 4pm.
-- Assume parameters can be used for arrival and lunch times
-  - Default is a random time for arrival time (between 8 and 8:30am), 
-    lunch end time (between 12pm and 4pm)
-    and lunch length (between 30 - 60 minutes)
-  - The lunch start time and end of workday time can be determined with these parameters
-- Developers do not ask questions before their standup meeting and do not ask questions after the status meeting.
+
+- Everyone is finished with lunch by 4pm unless a developer had a late lunch due to someone asking a question.
+  In that case the developer will go to lunch ASAP and will return to work no later than
+  4:10pm which will still be on time for the status meeting.
+
+- The time between 4pm and 4:15pm is reserved as the time to finish answering questions and wait for people to get back from late
+  lunches. Otherwise, developers with no questions and at work will go to the status meeting at 4pm.
+
+- The 10 minutes in which a manager needs to answer a question will not be configurable since the manager is 
+  very knowledgeable about software and can answer any question that may come up in that amount of time.
+
+- Any questions asked to a team lead or the manager past 4pm are requested to be put off until the next work day
+  so that the status meeting is not held up.
+
+- Developers do not ask questions before their standup meeting and do not ask questions after the status meeting
+  so that they can start/wrap up work.
+
+- Parameters to be used in the program
+  - Times - defualt parameter for any time is a random time as follows
+      Arrival time: between 8 and 8:30am, 
+      Lunch end time: between 12pm and 4pm,
+      Lunch length: between 30 - 60 minutes
+      Note: The lunch start time and end of workday time can be determined with these parameters
+  - Number of Teams: default is 3
+  - Number of Developers per team: default is 4
+  - Number of Questions asked during the day
+      Team Leads: default is 0 questions or 1 question (since they are experienced)
+      Developers: defualt is between 1 question ans 3 questions (due to the lack of experience)
+  - Number of Conference Rooms: default is 1

@@ -8,7 +8,7 @@ import java.util.concurrent.CountDownLatch;
  *
  */
 public class Main {
-	private final static int day = 5400; //milliseconds, (9 hour work day)
+	private final static int day = 6600; //milliseconds, (9 hour work day)
 	private final static int minute = 10; //milliseconds
 	
 	private final static int numTeams = 3;

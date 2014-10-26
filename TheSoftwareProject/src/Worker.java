@@ -36,7 +36,12 @@ public abstract class Worker extends Thread {
 	}
 	
 	public void goToLunch(){
-		System.out.println(clock.getFormattedClock() + "  " + name + " goes to lunch for " + this.timeAtLunch+ " minutes");
+		//450 = 3:30pm
+		if(clock.getClock() >= 450) {
+			//Allow for a half hour lunch if a worker is late
+			this.timeAtLunch = 30;
+		}
+		System.out.println(clock.getFormattedClock() + "  " + name + " goes to lunch for " + this.timeAtLunch + " minutes");
 		this.timeLapse(this.timeAtLunch);
 		System.out.println(clock.getFormattedClock() + "  " + name + " returns from lunch");
 	}

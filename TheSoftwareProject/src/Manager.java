@@ -11,7 +11,7 @@ import java.util.concurrent.CountDownLatch;
 public class Manager extends Worker{
 	private List<Thread> employees;
 	private List<Thread> teamLeads;
-	private boolean isBusy = false;
+	private boolean isBusy;
 	private LinkedList<TeamLead> questionQueue = new LinkedList<TeamLead>();
 	
 	/**
@@ -40,92 +40,17 @@ public class Manager extends Worker{
 		teamLeads.add(l);
 	}
 	
-	public boolean isBusy(){
+	public synchronized boolean isBusy(){
 		return isBusy;
 	}
 	
-	public synchronized void answerQuestion() {
-		isBusy = true;
-		System.out.println(clock.getFormattedClock() + "  " + name + " answers a question");
-		this.timeLapse(10);
-		isBusy = false;
-		this.notifyAll();
-		
-		return;
-	}
-	
-	public void getInLine(TeamLead lead){
+	public synchronized void getInLine(TeamLead lead){
 		questionQueue.add(lead);
 	}
 	
-	public boolean isFirst(TeamLead lead){
+	public synchronized boolean isFirst(TeamLead lead){
 		return lead.equals(questionQueue.getFirst());
 	}
-	
-	@Override
-	public synchronized void goToLunch(){
-		isBusy = true;
-		super.goToLunch();
-		isBusy = false;
-		this.notifyAll();
-	}
-	
-	/**
-	 * This is where I'm not really sure how to actually make sure that these are the
-	 * times all these things are happening
-	 */
-	public void workday() {
-		this.arrive(); //8 AM
-		System.out.println(clock.getFormattedClock() + "  " + name + " performs planning and administrative activities");
-		this.startStandUpMeeting(); //ASAP
-		int standupEnd = clock.getClock();
-		
-		//10am = 120 minutes past 8am
-		this.timeLapseWorking(120 - standupEnd);// Wait until 10am
-		this.goToMeeting(); //10 AM
-		
-		//Work until lunch
-		//Makes the employee work before going off to lunch
-		synchronized(clock) {
-			while (clock.getClock() < (this.lunchEndTime - this.timeAtLunch)) {
-				try {
-					clock.wait();
-					this.timeWorked++;
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		this.goToLunch(); //12 PM
-		int lunchEnd = clock.getClock();
-		
-		//2pm = 360 minutes past 8am
-		this.timeLapseWorking(360 - lunchEnd);
-		this.goToMeeting(); //2PM
-		int meetingTwoEnd = clock.getClock();
-		
-		this.timeLapseWorking(480 - meetingTwoEnd);
-		this.goToStatusMeeting(); //4PM
-		int statusEnd = clock.getClock();
-		
-		//The manager will always stil until 5pm no matter what
-		this.timeLapseWorking(540 - statusEnd);
-		this.leave();
-	}
-	
-	/**
-	 * There are 2 meetings, one at 10 and one at 2, they are both 1 hour
-	 */
-	public synchronized void goToMeeting(){
-		isBusy = true;
-		System.out.println(clock.getFormattedClock() + "  " + name + " goes to a meeting");
-		this.timeLapseWorking(60); 
-		System.out.println(clock.getFormattedClock() + "  " + name + " returns from a meeting");
-		isBusy = false;
-		this.notifyAll();
-	}
-	
-	
 	
 	/**
 	 * this is the meeting with all the team leads in the morning
@@ -154,6 +79,194 @@ public class Manager extends Worker{
 		}
 	}
 	
+	/**
+	 * There are 2 meetings, one at 10 and one at 2, they are both 1 hour
+	 */
+	public void goToMeeting(){
+		synchronized(this){
+			isBusy = true;
+		}
+		System.out.println(clock.getFormattedClock() + "  " + name + " goes to a meeting");
+		this.timeLapseWorking(60); 
+		System.out.println(clock.getFormattedClock() + "  " + name + " returns from a meeting");
+		synchronized(this){
+			isBusy = false;
+			this.notifyAll();
+		}
+	}
+	
+	@Override
+	public void goToLunch(){
+		synchronized(this){
+			isBusy = true;
+		}
+		super.goToLunch();
+		synchronized(this){
+			isBusy = false;
+			this.notifyAll();
+		}
+	}
+	
+	public void answerQuestion(String askingName) {
+		//If it is greater than 4pm then any remaining questions must wait until tomorrow
+		if(clock.getClock() >= 480){
+			synchronized(this){
+				System.out.println(clock.getFormattedClock() + "  " + name + " requests that the question asked by " + askingName + " is held off until the next work day");
+				isBusy = false;
+				this.notifyAll();
+			}
+			return;
+		} else {
+			synchronized(this){
+				isBusy = true;
+			}
+			System.out.println(clock.getFormattedClock() + "  " + name + " is asked a question by " + askingName);
+			this.timeLapseWorking(10);
+			System.out.println(clock.getFormattedClock() + "  " + name + " finished answering a question for " + askingName);
+			synchronized(this){
+				isBusy = false;
+				this.notifyAll();
+			}
+			return;
+		}
+	}
+	
+	/**
+	 * This is where I'm not really sure how to actually make sure that these are the
+	 * times all these things are happening
+	 */
+	public void workday() {
+		this.arrive(); //8 AM
+		System.out.println(clock.getFormattedClock() + "  " + name + " performs planning and administrative activities");
+		this.startStandUpMeeting(); //ASAP
+		
+		//10am = 120 minutes past 8am
+		while(clock.getClock() < (120)){
+			while(this.questionQueue.isEmpty()){
+				if(clock.getClock() >= 120) {
+					break;
+				}
+				//Makes the employee work
+				synchronized(clock) {
+					try {
+						clock.wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					this.timeWorked++;
+				}
+			}
+			while(!this.questionQueue.isEmpty()){
+				if(clock.getClock() >= 120) {
+					System.out.println(clock.getFormattedClock() + "  " + name + " has a meeting to go to and will continue answering questions later");
+					break;
+				}
+				int timeBefore = clock.getClock();
+				String name = this.questionQueue.remove().name;
+				this.answerQuestion(name);
+				int timeAfter = clock.getClock();
+				this.timeWorked += timeAfter-timeBefore;
+			}
+		}
+		
+		this.goToMeeting(); //10 AM
+		
+		while(clock.getClock() < (this.lunchEndTime - this.timeAtLunch)){
+			while(this.questionQueue.isEmpty()){
+				if(clock.getClock() >= (this.lunchEndTime - this.timeAtLunch)) {
+					break;
+				}
+				//Makes the employee work
+				synchronized(clock) {
+					try {
+						clock.wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					this.timeWorked++;
+				}
+			}
+			while(!this.questionQueue.isEmpty()){
+				if(clock.getClock() >= (this.lunchEndTime - this.timeAtLunch)) {
+					System.out.println(clock.getFormattedClock() + "  " + name + " wants to go to lunch and will continue answering questions later");
+					break;
+				}
+				int timeBefore = clock.getClock();
+				String name = this.questionQueue.remove().name;
+				this.answerQuestion(name);
+				int timeAfter = clock.getClock();
+				this.timeWorked += timeAfter-timeBefore;
+			}
+		}
+		
+	
+		this.goToLunch(); //12 PM
+
+		
+		//2pm = 360 minutes past 8am
+		while(clock.getClock() < (360)){
+			while(this.questionQueue.isEmpty()){
+				if(clock.getClock() >= 360) {
+					break;
+				}
+				//Makes the employee work
+				synchronized(clock) {
+					try {
+						clock.wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					this.timeWorked++;
+				}
+			}
+			while(!this.questionQueue.isEmpty()){
+				if(clock.getClock() >= 360) {
+					System.out.println(clock.getFormattedClock() + "  " + name + " has a meeting to go to and will continue answering questions later");
+					break;
+				}
+				int timeBefore = clock.getClock();
+				String name = this.questionQueue.remove().name;
+				this.answerQuestion(name);
+				int timeAfter = clock.getClock();
+				this.timeWorked += timeAfter-timeBefore;
+			}
+		}
+		//this.timeLapseWorking(360 - lunchEnd);
+		this.goToMeeting(); //2PM
+		//int meetingTwoEnd = clock.getClock();
+		
+		while(clock.getClock() < (480)){
+			while(this.questionQueue.isEmpty()){
+				if(clock.getClock() >= 480) {
+					break;
+				}
+				//Makes the employee work
+				synchronized(clock) {
+					try {
+						clock.wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					this.timeWorked++;
+				}
+			}
+			while(!this.questionQueue.isEmpty()){
+				int timeBefore = clock.getClock();
+				String name = this.questionQueue.remove().name;
+				this.answerQuestion(name);
+				int timeAfter = clock.getClock();
+				this.timeWorked += timeAfter-timeBefore;
+			}
+		}
+		
+		//this.timeLapseWorking(480 - meetingTwoEnd);
+		this.goToStatusMeeting(); //4PM
+		int statusEnd = clock.getClock();
+		
+		//The manager will always stil until 5pm no matter what
+		this.timeLapseWorking(540 - statusEnd);
+		this.leave();
+	}
 	
 	public int totalTimeWorking() {
 		return 0;
