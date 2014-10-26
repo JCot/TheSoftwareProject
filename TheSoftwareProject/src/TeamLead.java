@@ -11,6 +11,7 @@ public class TeamLead extends Worker {
 	private boolean isBusy;
 	private Manager manager;
 	private LinkedList<Employee> questionQueue = new LinkedList<Employee>();
+	private boolean questionAnswered;
 	
 	public TeamLead(String name, String devNumber, String teamNumber, Clock clock, CountDownLatch start, MeetingController meetings, Manager manager){
 		super(name, clock, start, meetings);
@@ -30,15 +31,19 @@ public class TeamLead extends Worker {
 		questionQueue.add(e);
 	}
 	
+	public synchronized void setQuestionAnswered(){
+		this.questionAnswered = true;
+	}
+	
 	//Try and answer a team members question
-	public void answerQuestion(String askingName){
+	public void answerQuestion(Employee developer){
 		boolean canAnswer = (rand.nextInt(1) == 1);
 		synchronized (this) {
 			isBusy = true;
 		}
 		//If it is greater than 4pm then any remaining questions must wait until tomorrow
 		if(clock.getClock() >= 480){
-			System.out.println(clock.getFormattedClock() + "  " + name + " requests that the question asked by " + askingName + " is held off until the next work day");
+			System.out.println(clock.getFormattedClock() + "  " + name + " requests that the question asked by " + developer.name + " is held off until the next work day");
 			synchronized (this) {
 				isBusy = false;
 				this.notifyAll();
@@ -47,15 +52,17 @@ public class TeamLead extends Worker {
 		}
 		
 		if(canAnswer){
-			System.out.println(clock.getFormattedClock() + "  " + name + " answers a question for " + askingName);
+			System.out.println(clock.getFormattedClock() + "  " + name + " answers a question for " + developer.name );
 			synchronized (this) {
 				isBusy = false;
 				this.notifyAll();
 			}
 			return;
 		} else {
-			System.out.println(clock.getFormattedClock() + "  " + name + " cannot answer " + askingName +"'s question.");
+			System.out.println(clock.getFormattedClock() + "  " + name + " cannot answer " + developer.name  +"'s question.");
+			questionAnswered = false;
 			this.askQuestion();
+			developer.setQuestionAnswered();
 		}
 		
 	}
@@ -66,14 +73,16 @@ public class TeamLead extends Worker {
 			isBusy = true;
 		}
 		if(manager.isBusy()){
-			System.out.println(clock.getFormattedClock() + "  " + name + " waits in line to ask the manager a question");
+			System.out.println(clock.getFormattedClock() + "  " + name + " waits in line to ask a question");
 		} else {
 			System.out.println(clock.getFormattedClock() + "  " + name + " asks the manager a question");
 		}
 		manager.getInLine(this);
 		synchronized(manager) {
 			try {
-				manager.wait();
+				while(this.questionAnswered == false){
+					manager.wait();
+				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -203,8 +212,8 @@ public class TeamLead extends Worker {
 					break;
 				}
 				int timeBefore = clock.getClock();
-				String name = this.questionQueue.remove().name;
-				this.answerQuestion(name);
+				Employee dev = this.questionQueue.remove();
+				this.answerQuestion(dev);
 				int timeAfter = clock.getClock();
 				this.timeWorked += timeAfter-timeBefore;
 			}
@@ -232,8 +241,8 @@ public class TeamLead extends Worker {
 			}
 			while(!this.questionQueue.isEmpty()){
 				int timeBefore = clock.getClock();
-				String name = this.questionQueue.remove().name;
-				this.answerQuestion(name);
+				Employee dev = this.questionQueue.remove();
+				this.answerQuestion(dev);
 				int timeAfter = clock.getClock();
 				this.timeWorked += timeAfter-timeBefore;
 			}

@@ -38,7 +38,7 @@ public abstract class Worker extends Thread {
 	public void goToLunch(){
 		//450 = 3:30pm
 		if(clock.getClock() >= 450) {
-			//Allow for a half hour lunch if a worker is late
+			//Modify the timeAtLunch if the worker is late due to questions
 			this.timeAtLunch = 30;
 		}
 		System.out.println(clock.getFormattedClock() + "  " + name + " goes to lunch for " + this.timeAtLunch + " minutes");

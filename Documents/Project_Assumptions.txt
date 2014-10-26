@@ -2,9 +2,8 @@ This is the list of assumptions that we are making for the implementation
 of the software project day.
 -------------------------------------------------------------------------------
 
-- An employee asking a question is still considered to be working (unless they
-    are waiting for the project manager, in which case they will go back to working
-    until he is available) and will not leave for lunch while
+- An employee asking a question is still considered to be working (even if they
+    are waiting) and will not leave for lunch while
     asking a question or waiting for one to be answered.
 
 - Everyone is finished with lunch by 4pm unless a developer had a late lunch due to someone asking a question.
@@ -16,6 +15,9 @@ of the software project day.
 
 - The 10 minutes in which a manager needs to answer a question will not be configurable since the manager is 
   very knowledgeable about software and can answer any question that may come up in that amount of time.
+
+- Developers and team leads will only ask one question at a time and wait for that question to be answered before
+  they ask the next question.
 
 - Any questions asked to a team lead or the manager past 4pm are requested to be put off until the next work day
   so that the status meeting is not held up.

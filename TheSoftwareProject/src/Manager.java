@@ -107,11 +107,12 @@ public class Manager extends Worker{
 		}
 	}
 	
-	public void answerQuestion(String askingName) {
+	public void answerQuestion(TeamLead askingThread) {
 		//If it is greater than 4pm then any remaining questions must wait until tomorrow
 		if(clock.getClock() >= 480){
+			System.out.println(clock.getFormattedClock() + "  " + name + " requests that the question asked by " + askingThread.name + " is held off until the next work day");
 			synchronized(this){
-				System.out.println(clock.getFormattedClock() + "  " + name + " requests that the question asked by " + askingName + " is held off until the next work day");
+				askingThread.setQuestionAnswered();
 				isBusy = false;
 				this.notifyAll();
 			}
@@ -120,10 +121,11 @@ public class Manager extends Worker{
 			synchronized(this){
 				isBusy = true;
 			}
-			System.out.println(clock.getFormattedClock() + "  " + name + " is asked a question by " + askingName);
+			System.out.println(clock.getFormattedClock() + "  " + name + " is asked a question by " + askingThread.name);
 			this.timeLapseWorking(10);
-			System.out.println(clock.getFormattedClock() + "  " + name + " finished answering a question for " + askingName);
+			System.out.println(clock.getFormattedClock() + "  " + name + " finished answering a question for " + askingThread.name);
 			synchronized(this){
+				askingThread.setQuestionAnswered();
 				isBusy = false;
 				this.notifyAll();
 			}
@@ -162,8 +164,8 @@ public class Manager extends Worker{
 					break;
 				}
 				int timeBefore = clock.getClock();
-				String name = this.questionQueue.remove().name;
-				this.answerQuestion(name);
+				TeamLead lead = this.questionQueue.remove();
+				this.answerQuestion(lead);
 				int timeAfter = clock.getClock();
 				this.timeWorked += timeAfter-timeBefore;
 			}
@@ -192,8 +194,8 @@ public class Manager extends Worker{
 					break;
 				}
 				int timeBefore = clock.getClock();
-				String name = this.questionQueue.remove().name;
-				this.answerQuestion(name);
+				TeamLead lead = this.questionQueue.remove();
+				this.answerQuestion(lead);
 				int timeAfter = clock.getClock();
 				this.timeWorked += timeAfter-timeBefore;
 			}
@@ -225,8 +227,8 @@ public class Manager extends Worker{
 					break;
 				}
 				int timeBefore = clock.getClock();
-				String name = this.questionQueue.remove().name;
-				this.answerQuestion(name);
+				TeamLead lead = this.questionQueue.remove();
+				this.answerQuestion(lead);
 				int timeAfter = clock.getClock();
 				this.timeWorked += timeAfter-timeBefore;
 			}
@@ -252,8 +254,8 @@ public class Manager extends Worker{
 			}
 			while(!this.questionQueue.isEmpty()){
 				int timeBefore = clock.getClock();
-				String name = this.questionQueue.remove().name;
-				this.answerQuestion(name);
+				TeamLead lead = this.questionQueue.remove();
+				this.answerQuestion(lead);
 				int timeAfter = clock.getClock();
 				this.timeWorked += timeAfter-timeBefore;
 			}

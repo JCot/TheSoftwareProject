@@ -14,6 +14,7 @@ public class Employee extends Worker{
 	protected String devNumber;
 	protected ArrayList<Integer> questionTimes;
 	private TeamLead lead;
+	private boolean questionAnswered;
 	
 	public Employee (String name, String devNumber, String teamNumber, TeamLead lead, Clock clock, CountDownLatch startLatch, MeetingController meetings) {
 		super(name, clock, startLatch, meetings);
@@ -35,17 +36,28 @@ public class Employee extends Worker{
 		Collections.sort(questionTimes);
 	}
 	
+	public synchronized void setQuestionAnswered(){
+		this.questionAnswered = true;
+	}
+	
 	//Ask team lead a question
 	@Override
 	public void askQuestion(){
+		//Textual account for two people asking a lead a question at the same time
+		if(lead.isBusy()) {
+			System.out.println(clock.getFormattedClock() + "  " + name + " wants to ask a question but notices that the team lead is not available and will continue working until he is available");
+
+		}
 		System.out.println(clock.getFormattedClock() + "  " + name + " asks their team lead a question");
 		lead.getInLine(this);
 		//Wait for the lead to get an answer
 		synchronized(lead){
-			try {
-				lead.wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+			while(this.questionAnswered == false){
+				try {
+					lead.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -130,7 +142,7 @@ public class Employee extends Worker{
 				}
 				synchronized(lead){
 					if(lead.isBusy()) {
-						System.out.println(clock.getFormattedClock() + "  " + name + " notices that the team lead is not available and will continue working until he is available");
+						System.out.println(clock.getFormattedClock() + "  " + name + " wants to ask a question but notices that the team lead is not available and will continue working until he is available");
 					}
 					while(lead.isBusy()) {
 						try {
@@ -147,6 +159,7 @@ public class Employee extends Worker{
 					index = i;
 					break;
 				}
+				this.questionAnswered = false;
 				askQuestion();
 			}
 			//Add the time to complete each iteration
@@ -201,6 +214,7 @@ public class Employee extends Worker{
 				this.timeWorked += (clockAfter - clockBefore);
 				break;
 			}
+			this.questionAnswered = false;
 			askQuestion();
 			
 			//Add the time to complete each iteration
