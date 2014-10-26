@@ -8,7 +8,7 @@ import java.util.concurrent.CountDownLatch;
  *
  */
 public class Main {
-	private final static int day = 5400; //time it takes to simulate a day in milliseconds
+	private final static int day = 6600; //time it takes to simulate a day in milliseconds
 	                                     //(must represent a 9 hour work day at a minimum)
 	private final static int minute = 10; //time it takes to simulate a minute in milliseconds
 	
@@ -19,6 +19,9 @@ public class Main {
 	
 	protected final static int minDevQues = 0; //Minimum amount of questions a dev can ask
 	protected final static int maxDevQues = 2; //Maximum amount questions a dev can ask
+	
+	protected final static int minLeadQues = 0; //Minimum amount of questions a dev can ask
+	protected final static int maxLeadQues = 1; //Maximum amount questions a dev can ask
 	
 	protected final static int managerQuesTime = 10; //Time it takes for a manager to answer each question
 	

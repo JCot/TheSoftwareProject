@@ -28,7 +28,7 @@ public class Employee extends Worker{
 		this.name = name;
 		this.questionTimes = new ArrayList<Integer>();
 		
-		int numQuestions = rand.nextInt((Main.maxDevQues - Main.minDevQues) + 1) + Main.minDevQues;
+		int numQuestions = 1;//rand.nextInt((Main.maxDevQues - Main.minDevQues) + 1) + Main.minDevQues;
 		
 		for(int i = 0; i < numQuestions; i++){
 			questionTimes.add(rand.nextInt(480 - 90) + 90);
