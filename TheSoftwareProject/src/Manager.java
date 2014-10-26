@@ -9,8 +9,6 @@ import java.util.concurrent.CountDownLatch;
  *
  */
 public class Manager extends Worker{
-	private List<Thread> employees;
-	private List<Thread> teamLeads;
 	private boolean isBusy;
 	private LinkedList<TeamLead> questionQueue = new LinkedList<TeamLead>();
 	
@@ -28,16 +26,6 @@ public class Manager extends Worker{
 		this.arrivalTime = 0;
 		this.timeAtLunch = 60;// 1 hour
 		this.lunchEndTime = 300;// 1pm
-		employees = new ArrayList<Thread>();
-		teamLeads = new ArrayList<Thread>();
-	}
-	
-	public void addEmployee(Employee e) {
-		employees.add(e);
-	}
-	
-	public void addTeamLead(TeamLead l){
-		teamLeads.add(l);
 	}
 	
 	public synchronized boolean isBusy(){
@@ -52,85 +40,16 @@ public class Manager extends Worker{
 		return lead.equals(questionQueue.getFirst());
 	}
 	
-	/**
-	 * this is the meeting with all the team leads in the morning
-	 */
-	public void startStandUpMeeting() {
-		CountDownLatch standup = this.meetings.getManagerMeeting();
-		standup.countDown();
-		
-		int timeBefore = clock.getClock();
-		try {
-			//waiting for everyone to get here.
-			standup.await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		int timeAfter = clock.getClock();
-		this.timeWorked = (timeAfter - timeBefore);
-		
-		System.out.println(clock.getFormattedClock() + "  " + name + " starts the morning standup.");
-		//wait(minute * 15);  //the meeting lasts 15 minutes
-		this.timeLapseWorking(15);
-		System.out.println(clock.getFormattedClock() + "  " + name + " ends the morning standup.");
-		this.meetings.setManagerMeetingOver();
-		synchronized(this.meetings) {
-			this.meetings.notifyAll();
-		}
-	}
-	
-	/**
-	 * There are 2 meetings, one at 10 and one at 2, they are both 1 hour
-	 */
-	public void goToMeeting(){
-		synchronized(this){
-			isBusy = true;
-		}
-		System.out.println(clock.getFormattedClock() + "  " + name + " goes to a meeting");
-		this.timeLapseWorking(60); 
-		System.out.println(clock.getFormattedClock() + "  " + name + " returns from a meeting");
-		synchronized(this){
-			isBusy = false;
-			this.notifyAll();
-		}
-	}
-	
 	@Override
-	public void goToLunch(){
-		synchronized(this){
-			isBusy = true;
-		}
-		super.goToLunch();
-		synchronized(this){
-			isBusy = false;
-			this.notifyAll();
-		}
+	public void goToTeamStandUpMeeting() {
+		// Does nothing for manager
+		
 	}
-	
-	public void answerQuestion(TeamLead askingThread) {
-		//If it is greater than 4pm then any remaining questions must wait until tomorrow
-		if(clock.getClock() >= 480){
-			System.out.println(clock.getFormattedClock() + "  " + name + " requests that the question asked by " + askingThread.name + " is held off until the next work day");
-			synchronized(this){
-				askingThread.setQuestionAnswered();
-				isBusy = false;
-				this.notifyAll();
-			}
-			return;
-		} else {
-			synchronized(this){
-				isBusy = true;
-			}
-			System.out.println(clock.getFormattedClock() + "  " + name + " is asked a question by " + askingThread.name);
-			this.timeLapseWorking(Main.managerQuesTime);
-			System.out.println(clock.getFormattedClock() + "  " + name + " finished answering a question for " + askingThread.name);
-			synchronized(this){
-				askingThread.setQuestionAnswered();
-				isBusy = false;
-				this.notifyAll();
-			}
-			return;
-		}
+
+	@Override
+	public void askQuestion() {
+		// Does nothing for manager
+		
 	}
 	
 	/**
@@ -139,7 +58,7 @@ public class Manager extends Worker{
 	 */
 	public void workday() {
 		this.arrive(); //8 AM
-		System.out.println(clock.getFormattedClock() + "  " + name + " performs planning and administrative activities");
+		System.out.println(clock.getFormattedClock() + "  " + name + " performs planning and administrative activities.");
 		this.startStandUpMeeting(); //ASAP
 		
 		this.receiveQuestionsBeforeFirstMeeting();
@@ -161,35 +80,90 @@ public class Manager extends Worker{
 		this.leave();
 	}
 	
-	public int totalTimeWorking() {
-		return 0;
+	/**
+	 * this is the meeting with all the team leads in the morning
+	 */
+	public void startStandUpMeeting() {
+		CountDownLatch standup = this.meetings.getManagerMeeting();
+		standup.countDown();
 		
+		int timeBefore = clock.getClock();
+		try {
+			//waiting for everyone to get here.
+			standup.await();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		int timeAfter = clock.getClock();
+		this.timeWorked = (timeAfter - timeBefore);
+		
+		System.out.println(clock.getFormattedClock() + "  " + name + " starts the morning standup.");
+		this.timeLapseWorking(15);
+		this.timeInMeetings += 15 + (timeAfter - timeBefore);
+		System.out.println(clock.getFormattedClock() + "  " + name + " ends the morning standup.");
+		this.meetings.setManagerMeetingOver();
+		synchronized(this.meetings) {
+			this.meetings.notifyAll();
+		}
 	}
 	
-	public int totalTimeLunch() {
-		return 0;
-		
+	/**
+	 * There are 2 meetings, one at 10 and one at 2, they are both 1 hour
+	 */
+	public void goToMeeting(){
+		synchronized(this){
+			isBusy = true;
+		}
+		System.out.println(clock.getFormattedClock() + "  " + name + " goes to a meeting.");
+		this.timeLapseWorking(60); 
+		this.timeInMeetings += 60;
+		System.out.println(clock.getFormattedClock() + "  " + name + " returns from a meeting.");
+		synchronized(this){
+			isBusy = false;
+			this.notifyAll();
+		}
 	}
 	
-	public int totalTimeMeetings() {
-		return 0;
-		
-	}
-	
-	public int totalTimeWaiting() {
-		return 0;
-	}
-
 	@Override
-	public void goToTeamStandUpMeeting() {
-		// Does nothing for manager
-		
+	public void goToLunch(){
+		synchronized(this){
+			isBusy = true;
+		}
+		super.goToLunch();
+		synchronized(this){
+			isBusy = false;
+			this.notifyAll();
+		}
 	}
-
-	@Override
-	public void askQuestion() {
-		// Does nothing for manager
+	
+	public void answerQuestion(TeamLead askingThread) {
+		//String to include in text if the dev parameter isnt empty
+		String includeDev = !askingThread.devAsking.equals("") ? " & " + askingThread.devAsking : "";
 		
+		//If it is greater than 4pm then any remaining questions must wait until tomorrow
+		if(clock.getClock() >= 480){
+			System.out.println(clock.getFormattedClock() + "  " + name + " requests that the question asked by " + askingThread.name + includeDev + " is held off until the next work day.");
+			synchronized(this){
+				askingThread.setQuestionAnswered();
+				isBusy = false;
+				this.notifyAll();
+			}
+			return;
+		} else {
+			synchronized(this){
+				isBusy = true;
+			}
+			System.out.println(clock.getFormattedClock() + "  " + name + " is asked a question by " + askingThread.name + includeDev + ".");
+			//The manager's work time is already accounted for here so we just need some time to lapse
+			this.timeLapse(Main.managerQuesTime);
+			System.out.println(clock.getFormattedClock() + "  " + name + " finished answering a question for " + askingThread.name + includeDev + ".");
+			synchronized(this){
+				askingThread.setQuestionAnswered();
+				isBusy = false;
+				this.notifyAll();
+			}
+			return;
+		}
 	}
 	
 	private void receiveQuestionsBeforeFirstMeeting() {
@@ -213,7 +187,7 @@ public class Manager extends Worker{
 			while(!this.questionQueue.isEmpty()){
 				//Make the manager go to his meeting and ask questions later
 				if(clock.getClock() >= 120) {
-					System.out.println(clock.getFormattedClock() + "  " + name + " has a meeting to go to and will continue answering questions later");
+					System.out.println(clock.getFormattedClock() + "  " + name + " has a meeting to go to and will continue answering questions later.");
 					break;
 				}
 				int timeBefore = clock.getClock();
@@ -246,7 +220,7 @@ public class Manager extends Worker{
 			while(!this.questionQueue.isEmpty()){
 				//Have the manager take a break for lunch then continue to answer questions
 				if(clock.getClock() >= (this.lunchEndTime - this.timeAtLunch)) {
-					System.out.println(clock.getFormattedClock() + "  " + name + " wants to go to lunch and will continue answering questions later");
+					System.out.println(clock.getFormattedClock() + "  " + name + " wants to go to lunch and will continue answering questions later.");
 					break;
 				}
 				int timeBefore = clock.getClock();
@@ -279,7 +253,7 @@ public class Manager extends Worker{
 			while(!this.questionQueue.isEmpty()){
 				//Hold off answering questions until after the meeting
 				if(clock.getClock() >= 360) {
-					System.out.println(clock.getFormattedClock() + "  " + name + " has a meeting to go to and will continue answering questions later");
+					System.out.println(clock.getFormattedClock() + "  " + name + " has a meeting to go to and will continue answering questions later.");
 					break;
 				}
 				int timeBefore = clock.getClock();

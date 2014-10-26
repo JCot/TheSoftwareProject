@@ -8,7 +8,7 @@ import java.util.concurrent.CountDownLatch;
  *
  */
 public class Main {
-	private final static int day = 6600; //time it takes to simulate a day in milliseconds
+	private final static int day = 5400; //time it takes to simulate a day in milliseconds
 	                                     //(must represent a 9 hour work day at a minimum)
 	private final static int minute = 10; //time it takes to simulate a minute in milliseconds
 	
@@ -29,9 +29,10 @@ public class Main {
 		CountDownLatch startLatch = new CountDownLatch(1);
 		MeetingController meetings = new MeetingController(numTeams, numDevsPerTeam);
 		Clock clock = new Clock();
-		List<Thread> employees = new ArrayList<Thread>();
+		List<Worker> employees = new ArrayList<Worker>();
 		Thread timer = new Thread(new Timer(minute,day,clock,startLatch));
 		Manager bob = new Manager("Bob", clock, startLatch, meetings);
+		employees.add(bob);
 		
 		
 		//Developer NM, where N is the team number (1-3)
@@ -40,24 +41,35 @@ public class Main {
 		for (int i = 1; i <= numTeams; i++) {
 			TeamLead lead = new TeamLead("Developer " + i + "1", "1", Integer.toString(i), clock, startLatch, meetings, bob);
 			employees.add(lead);
-			bob.addTeamLead(lead);
 			for (int j = 2; j<=numDevsPerTeam; j++) { 
 				Employee dev = new Employee("Developer " + i + j, Integer.toString(j), Integer.toString(i), lead, clock, startLatch, meetings);
 				employees.add(dev);
-				bob.addEmployee(dev);
 			}
 		}
 		
 		timer.start();
-		bob.start();
 		for(Thread e : employees) {
 			e.start();
 		}
 		
 		startLatch.countDown();
 		
+		try {
+			bob.join();
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+		System.out.println("\n");
+		for(Worker w : employees) {
+			System.out.println(w.name + "'s Statistics ---------------------");
+			System.out.println("Time worked: " + String.valueOf(w.timeWorked) + " minutes");
+			System.out.println("Time at lunch: " + String.valueOf(w.timeAtLunch) + " minutes");
+			System.out.println("Time in meetings: " + String.valueOf(w.timeInMeetings) + " minutes");
+			System.out.println("Time waiting for questions to be answered: " + String.valueOf(w.timeWaiting) + " minutes");
+			System.out.println("");
+
+		}
 		
 		
-		//TBD
 	}
 }

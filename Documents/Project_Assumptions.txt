@@ -33,6 +33,13 @@ of the software project day.
 - Developers do not ask questions before their standup meeting and do not ask questions after the status meeting
   so that they can start/wrap up work.
 
+- The meeting time statistic includes the time waiting for other meeting members to show up but does not include the times
+  in which a manager answers a question.
+
+- The waiting for manager statistic is assumed to be simply the time waited for questions to be answered since
+  a developer may have to wait for a team lead free before his question can be answered and a team lead may have
+  to wait for only a manager to be free before his question (and maybe a developer's question) can be answered.
+
 - Parameters to be used in the program
   - Number of Teams: default is 3
   - Number of Developers per team: default is 4

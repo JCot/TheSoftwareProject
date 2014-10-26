@@ -7,14 +7,16 @@ public abstract class Worker extends Thread {
 	protected String name;
 	protected int arrivalTime;
 	protected int lunchEndTime;
-	protected int timeAtLunch;
+	
 	protected Clock clock;
 	protected CountDownLatch startLatch;
 	protected MeetingController meetings;
 	protected Random rand = new Random();
 	
 	protected int timeInMeetings = 0;
+	protected int timeAtLunch;
 	protected int timeWorked = 0;
+	protected int timeWaiting = 0;
 	
 	protected static final Semaphore available = new Semaphore(Main.numRooms, true);
 	protected final int day = 4800; //milliseconds
@@ -34,16 +36,25 @@ public abstract class Worker extends Thread {
 		this.meetings = meetings;
 	}
 	
-	public void goToLunch(){
-		//450 = 3:30pm
-		if(clock.getClock() >= 450) {
-			//Modify the timeAtLunch if the worker is late due to questions
-			this.timeAtLunch = 30;
+	public void run(){
+		try {
+			this.startLatch.await();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
-		System.out.println(clock.getFormattedClock() + "  " + name + " goes to lunch for " + this.timeAtLunch + " minutes");
-		this.timeLapse(this.timeAtLunch);
-		System.out.println(clock.getFormattedClock() + "  " + name + " returns from lunch");
+		
+		//Simulate the worker's workday
+		this.workday();
 	}
+	
+	/**
+	 * Workday is an abstract method that will simulate a worker's workday. 
+	 */
+	public abstract void workday();
+	
+	public abstract void goToTeamStandUpMeeting();
+	
+	public abstract void askQuestion();
 	
 	public void arrive(){
 		//Makes the employee show up to work on his or her terms
@@ -56,16 +67,23 @@ public abstract class Worker extends Thread {
 				}
 			}
 		}
-		System.out.println(clock.getFormattedClock() + "  " + name + " arrives at work");
+		System.out.println(clock.getFormattedClock() + "  " + name + " arrives at work.");
 	}
 	
-	public void leave(){
-		System.out.println(clock.getFormattedClock() + "  " + name + " leaves work");
+	public void goToLunch(){
+		//450 = 3:30pm
+		if(clock.getClock() >= 450) {
+			//Modify the timeAtLunch if the worker is late due to questions
+			this.timeAtLunch = 30;
+		}
+		System.out.println(clock.getFormattedClock() + "  " + name + " goes to lunch for " + this.timeAtLunch + " minutes.");
+		this.timeLapse(this.timeAtLunch);
+		System.out.println(clock.getFormattedClock() + "  " + name + " returns from lunch.");
 	}
 	
 	//Go to the end of the day status meeting
 	public void goToStatusMeeting(){
-		System.out.println(clock.getFormattedClock() + "  " + name + " goes to daily status meeting");
+		System.out.println(clock.getFormattedClock() + "  " + name + " goes to daily status meeting.");
 		
 		this.meetings.getStatusLatch().countDown();
 		int timeBeforeWait = clock.getClock();
@@ -77,9 +95,28 @@ public abstract class Worker extends Thread {
 		}
 		int timeAfterWait = clock.getClock();
 		this.timeWorked += (timeAfterWait - timeBeforeWait);
+		this.timeInMeetings += (timeAfterWait - timeBeforeWait) + 15;
 		this.timeLapseWorking(15);
-		System.out.println(clock.getFormattedClock() + "  " + name + " leaves the daily status meeting");
+		System.out.println(clock.getFormattedClock() + "  " + name + " leaves the daily status meeting.");
 		
+	}
+	
+	public void leave(){
+		System.out.println(clock.getFormattedClock() + "  " + name + " leaves work.");
+	}	
+	
+	protected void timeLapseWorking(int minutes) {
+		synchronized(clock){
+			int time = clock.getClock();
+			while(clock.getClock() < time + minutes) {
+				try {
+					clock.wait();
+					this.timeWorked++;
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 	
 	protected void timeLapse(int minutes) {
@@ -95,36 +132,6 @@ public abstract class Worker extends Thread {
 		}
 	}
 	
-	protected void timeLapseWorking(int minutes) {
-		synchronized(clock){
-			int time = clock.getClock();
-			while(clock.getClock() < time + minutes) {
-				try {
-					clock.wait();
-					this.timeWorked++;
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-	/**
-	 * Workday is an abstract method that will simulate a worker's workday. 
-	 */
-	public abstract void workday();
-	public abstract void goToTeamStandUpMeeting();
-	public abstract void askQuestion();
-	
-	public void run(){
-		try {
-			this.startLatch.await();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		
-		//Simulate the worker's workday
-		this.workday();
-	}
 	
 	
 }

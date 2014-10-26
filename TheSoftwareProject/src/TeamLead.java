@@ -15,6 +15,8 @@ public class TeamLead extends Worker {
 	private ArrayList<Integer> questionTimes;
 	private boolean questionAnswered;
 	
+	protected String devAsking = "";
+	
 	public TeamLead(String name, String devNumber, String teamNumber, Clock clock, CountDownLatch start, MeetingController meetings, Manager manager){
 		super(name, clock, start, meetings);
 		this.team = teamNumber;
@@ -26,7 +28,7 @@ public class TeamLead extends Worker {
 		
 		this.questionTimes = new ArrayList<Integer>();
 		
-		int numQuestions = 1;//rand.nextInt((Main.maxLeadQues - Main.minLeadQues) + 1) + Main.minLeadQues;
+		int numQuestions = rand.nextInt((Main.maxLeadQues - Main.minLeadQues) + 1) + Main.minLeadQues;
 		
 		for(int i = 0; i < numQuestions; i++){
 			questionTimes.add(rand.nextInt(480 - 90) + 90);
@@ -47,65 +49,25 @@ public class TeamLead extends Worker {
 		this.questionAnswered = true;
 	}
 	
-	//Try and answer a team members question
-	public void answerQuestion(Employee developer){
-		boolean canAnswer = (rand.nextInt(2) == 1);
-		synchronized (this) {
-			isBusy = true;
-		}
-		//If it is greater than 4pm then any remaining questions must wait until tomorrow
-		if(clock.getClock() >= 480){
-			System.out.println(clock.getFormattedClock() + "  " + name + " requests that the question asked by " + developer.name + " is held off until the next work day.");
-			developer.setQuestionAnswered();
-			synchronized (this) {
-				isBusy = false;
-				this.notifyAll();
-			}
-			return;
-		}
-		
-		if(canAnswer){
-			System.out.println(clock.getFormattedClock() + "  " + name + " answers a question for " + developer.name +".");
-			developer.setQuestionAnswered();
-			synchronized (this) {
-				isBusy = false;
-				this.notifyAll();
-			}
-			return;
-		} else {
-			System.out.println(clock.getFormattedClock() + "  " + name + " attempts to answer " + developer.name  +"'s question but can't answer it.");
-			questionAnswered = false;
-			this.askQuestion();
-			developer.setQuestionAnswered();
-		}
-		
-	}
-	
 	@Override
-	public void askQuestion(){
-		synchronized (this) {
-			isBusy = true;
-		}
-		if(manager.isBusy()){
-			System.out.println(clock.getFormattedClock() + "  " + name + " waits in line to ask the manager a question.");
-		} else {
-			System.out.println(clock.getFormattedClock() + "  " + name + " asks the manager a question.");
-		}
-		manager.getInLine(this);
-		synchronized(manager) {
-			try {
-				while(this.questionAnswered == false){
-					manager.wait();
-				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		synchronized (this) {
-			isBusy = false;
-			this.notifyAll();
-		}
+	public void workday(){
+		this.arrive();
+		this.goToManagerMeeting();
+		this.goToTeamStandUpMeeting();
+		
+		int quesIndex = this.handleQuestionBeforeLunch();
 
+		this.goToLunch();
+		
+		this.handleQuestionsAfterLunch(quesIndex);
+		
+		this.goToStatusMeeting();
+		
+		//Work the remainder of time if necessary
+		if(480 > timeWorked){
+			this.timeLapseWorking(480 - timeWorked);
+		}
+		this.leave();
 	}
 	
 	//Go to morning meeting with PM
@@ -133,7 +95,7 @@ public class TeamLead extends Worker {
 		synchronized (this) {
 			isBusy = false;
 		}
-		timeInMeetings += 15;
+		timeInMeetings += (timeAfterWaiting - timeBeforeWaiting) + 15;
 	}
 	
 	@Override
@@ -168,6 +130,7 @@ public class TeamLead extends Worker {
 		this.timeWorked += (timeAfter - timeBefore);
 		
 		//Wait for employees to enter the conference room
+		timeBefore = clock.getClock();
 		try{
 			teamStandup.await();
 		} catch(InterruptedException e){
@@ -175,11 +138,10 @@ public class TeamLead extends Worker {
 		} catch (BrokenBarrierException e) {
 			e.printStackTrace();
 		}
-		
-		
+		timeAfter = clock.getClock();
 		
 		System.out.println(clock.getFormattedClock() + "  " + name + " hosts team standup meeting.");
-		timeInMeetings += 15;
+		timeInMeetings += 15 + (timeAfter - timeBefore);
 		this.timeLapseWorking(15);	
 		System.out.println(clock.getFormattedClock() + "  " + name + " ends team standup meeting.");
 		available.release();
@@ -198,30 +160,82 @@ public class TeamLead extends Worker {
 		}
 	}
 	
-	@Override
-	public void workday(){
-		this.arrive();
-		this.goToManagerMeeting();
-		this.goToTeamStandUpMeeting();
-		
-		int quesIndex = this.handleQuestionBeforeLunch();
-
-		this.goToLunch();
-		
-		this.handleQuestionsAfterLunch(quesIndex);
-		
-		this.goToStatusMeeting();
-		
-		//Work the remainder of time if necessary
-		if(480 > timeWorked){
-			this.timeLapseWorking(480 - timeWorked);
+	//Try and answer a team members question
+	public void answerQuestion(Employee developer){
+		boolean canAnswer = (rand.nextInt(2) == 1);
+		synchronized (this) {
+			isBusy = true;
 		}
-		this.leave();
+		//If it is greater than 4pm then any remaining questions must wait until tomorrow
+		if(clock.getClock() >= 480){
+			System.out.println(clock.getFormattedClock() + "  " + name + " requests that the question asked by " + developer.name + " is held off until the next work day.");
+			developer.setQuestionAnswered();
+			synchronized (this) {
+				isBusy = false;
+				this.notifyAll();
+			}
+			return;
+		}
+		
+		if(canAnswer){
+			System.out.println(clock.getFormattedClock() + "  " + name + " answers a question for " + developer.name +".");
+			developer.setQuestionAnswered();
+			synchronized (this) {
+				isBusy = false;
+				this.notifyAll();
+			}
+			return;
+		} else {
+			System.out.println(clock.getFormattedClock() + "  " + name + " attempts to answer " + developer.name  +"'s question but can't answer it.");
+			questionAnswered = false;
+			devAsking = developer.name;
+			this.askQuestion();
+			developer.setQuestionAnswered();
+			this.devAsking = "";
+		}
+		
 	}
+	
+	@Override
+	public void askQuestion(){
+		synchronized (this) {
+			isBusy = true;
+		}
+		if(manager.isBusy()){
+			System.out.println(clock.getFormattedClock() + "  " + name + " waits in line to ask the manager a question.");
+		} else {
+			System.out.println(clock.getFormattedClock() + "  " + name + " asks the manager a question.");
+		}
+		
+		//Add question to manager's queue
+		manager.getInLine(this);
+		
+		//Wait for the manager to answer the question
+		int timeBefore = clock.getClock();
+		synchronized(manager) {
+			try {
+				while(this.questionAnswered == false){
+					manager.wait();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		int timeAfter = clock.getClock();
+		//Takes into account the time the manager is answering the question
+		synchronized(this) {
+			this.timeWaiting += (timeAfter - timeBefore - 10);
+		}
+		synchronized (this) {
+			isBusy = false;
+			this.notifyAll();
+		}
 
+	}
+	
 	private int handleQuestionBeforeLunch(){
 		int index = 0;
-		int questionTime = this.questionTimes.get(index);
+		int questionTime = this.getQuestionTime(index);
 		int timeBefore = clock.getClock();
 		
 		while(clock.getClock() < (this.lunchEndTime - this.timeAtLunch)){
@@ -259,12 +273,11 @@ public class TeamLead extends Worker {
 	}
 	
 	private void handleQuestionsAfterLunch(int quesIndex){
-		//Process until 4pm (4pm = 480 simulated minutes)
-		//Process until 4pm (4pm = 480 simulated minutes)
 		int index = quesIndex;
 		int questionTime = getQuestionTime(index);
 		int timeBefore = clock.getClock();
 		
+		//Process until 4pm (4pm = 480 simulated minutes)
 		while(clock.getClock() < (480)){
 			while (clock.getClock() < questionTime){
 				if(clock.getClock() >= (480)){
@@ -294,9 +307,12 @@ public class TeamLead extends Worker {
 	
 	private int getQuestionTime(int index){
 		int questionTime;
+		
 		//Check the index and set the question time to a time that won't be reached
 		//if there are no more questions
 		if(this.questionTimes.size() <= index) {
+			questionTime = 99999999;
+		} else if (this.questionTimes.size() == 0) {
 			questionTime = 99999999;
 		} else {
 			questionTime = this.questionTimes.get(index);

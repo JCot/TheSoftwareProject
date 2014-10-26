@@ -28,7 +28,7 @@ public class Employee extends Worker{
 		this.name = name;
 		this.questionTimes = new ArrayList<Integer>();
 		
-		int numQuestions = 1;//rand.nextInt((Main.maxDevQues - Main.minDevQues) + 1) + Main.minDevQues;
+		int numQuestions = rand.nextInt((Main.maxDevQues - Main.minDevQues) + 1) + Main.minDevQues;
 		
 		for(int i = 0; i < numQuestions; i++){
 			questionTimes.add(rand.nextInt(480 - 90) + 90);
@@ -39,56 +39,6 @@ public class Employee extends Worker{
 	
 	public synchronized void setQuestionAnswered(){
 		this.questionAnswered = true;
-	}
-	
-	//Ask team lead a question
-	@Override
-	public void askQuestion(){
-		System.out.println(clock.getFormattedClock() + "  " + name + " gets in line to ask their team lead a question when the team lead is available next.");
-		lead.getInLine(this);
-		//Wait for the lead to get an answer
-		synchronized(lead){
-			while(this.questionAnswered == false){
-				try {
-					lead.wait();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-	
-	//Go to morning team stand-up meeting
-	@Override
-	public void goToTeamStandUpMeeting(){
-		CyclicBarrier teamStandup = this.meetings.getTeamStandUpLatch(Integer.parseInt(team)-1);
-		try{
-			teamStandup.await(); //Wait for all team members to arrive to work and reach this point
-		}
-		catch(InterruptedException e){
-			e.printStackTrace();
-		} catch (BrokenBarrierException e) {
-			e.printStackTrace();
-		}
-		
-		//Wait for the team lead to secure the room and for all 
-		//team members to arrive to the conference room
-		try{
-			teamStandup.await(); 
-		}
-		catch(InterruptedException e){
-			e.printStackTrace();
-		} catch (BrokenBarrierException e) {
-			e.printStackTrace();
-		}
-		timeWorked += clock.getClock() - arrivalTime;
-		System.out.println(clock.getFormattedClock() + "  " + name + " goes to team standup.");
-		this.timeLapseWorking(15);
-		timeInMeetings += 15;
-	}
-	
-	public int getTimeWorked(){
-		return timeWorked;
 	}
 	
 	@Override
@@ -124,7 +74,6 @@ public class Employee extends Worker{
 				}
 			}
 		}
-		
 		this.goToLunch();
 		
 		//Ask remaining questions
@@ -143,6 +92,59 @@ public class Employee extends Worker{
 			this.timeLapseWorking(480 - timeWorked);
 		}
 		this.leave();
+	}
+	
+	//Go to morning team stand-up meeting
+	@Override
+	public void goToTeamStandUpMeeting(){
+		CyclicBarrier teamStandup = this.meetings.getTeamStandUpLatch(Integer.parseInt(team)-1);
+		try{
+			teamStandup.await(); //Wait for all team members to arrive to work and reach this point
+		}
+		catch(InterruptedException e){
+			e.printStackTrace();
+		} catch (BrokenBarrierException e) {
+			e.printStackTrace();
+		}
+		
+		//Wait for the team lead to secure the room and for all 
+		//team members to arrive to the conference room
+		try{
+			teamStandup.await(); 
+		}
+		catch(InterruptedException e){
+			e.printStackTrace();
+		} catch (BrokenBarrierException e) {
+			e.printStackTrace();
+		}
+		timeWorked += clock.getClock() - arrivalTime;
+		System.out.println(clock.getFormattedClock() + "  " + name + " goes to team standup.");
+		this.timeLapseWorking(15);
+		timeInMeetings += 15;
+	}	
+	
+	//Ask team lead a question
+	@Override
+	public void askQuestion(){
+		System.out.println(clock.getFormattedClock() + "  " + name + " gets in line to ask their team lead a question when the team lead is available next.");
+		lead.getInLine(this);
+		//Wait for the lead to get an answer
+		int timeBefore = clock.getClock();
+		
+		synchronized(lead){
+			while(this.questionAnswered == false){
+				try {
+					lead.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		int timeAfter = clock.getClock();
+		//In order to capture the wait time due to the manager we use
+		//the lead's wait times instead of figuring out the employee's wait times
+		this.timeWaiting += (timeAfter - timeBefore);
 	}
 	
 	private int askQuestionsBeforeLunch() {
@@ -189,7 +191,6 @@ public class Employee extends Worker{
 		}
 		return questionIndex;
 	}
-	
 	
 	private void askQuestionsAfterLunch(int lastIndex) {
 		for(int i = lastIndex; i < questionTimes.size(); i++){
