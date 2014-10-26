@@ -6,7 +6,7 @@ To compile and run the program run javac Main.java and then Main.java.
 There is no way to interact with the program while it is running. However there are constraints you can change to affect how it runs. The constraints are as follows:
 
 int day = 5400; //time it takes to simulate a day in milliseconds
-	                                     //(must represent a 9 hour work day at a minimum)
+                     //(must represent a 9 hour work day at a minim
 int minute = 10; //time it takes to simulate a minute in milliseconds
 int numTeams = 3; //Number of teams
 int numDevsPerTeam = 4; //Number of Devs per team (including leads)
