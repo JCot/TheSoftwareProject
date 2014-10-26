@@ -166,6 +166,16 @@ public class Manager extends Worker{
 		}
 	}
 	
+	@Override
+	public void goToStatusMeeting() {
+		while(!this.questionQueue.isEmpty()){
+			//Address all questions before going to the status meeting
+			TeamLead lead = this.questionQueue.remove();
+			this.answerQuestion(lead);
+		}
+		super.goToStatusMeeting();
+	}
+	
 	private void receiveQuestionsBeforeFirstMeeting() {
 		//10am = 120 minutes past 8am
 		while(clock.getClock() < (120)){

@@ -17,11 +17,11 @@ public class Main {
 	
 	protected final static int numRooms = 1; //Number of conference rooms available
 	
-	protected final static int minDevQues = 0; //Minimum amount of questions a dev can ask
-	protected final static int maxDevQues = 2; //Maximum amount questions a dev can ask
+	protected final static int minDevQues = 2; //Minimum amount of questions a dev can ask
+	protected final static int maxDevQues = 5; //Maximum amount questions a dev can ask
 	
-	protected final static int minLeadQues = 0; //Minimum amount of questions a dev can ask
-	protected final static int maxLeadQues = 1; //Maximum amount questions a dev can ask
+	protected final static int minLeadQues = 1; //Minimum amount of questions a dev can ask
+	protected final static int maxLeadQues = 2; //Maximum amount questions a dev can ask
 	
 	protected final static int managerQuesTime = 10; //Time it takes for a manager to answer each question
 	

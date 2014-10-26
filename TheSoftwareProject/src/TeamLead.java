@@ -233,6 +233,16 @@ public class TeamLead extends Worker {
 
 	}
 	
+	@Override
+	public void goToStatusMeeting() {
+		while(!this.questionQueue.isEmpty()){
+			//Address all questions before going to the status meeting
+			Employee dev = this.questionQueue.remove();
+			this.answerQuestion(dev);
+		}
+		super.goToStatusMeeting();
+	}
+	
 	private int handleQuestionBeforeLunch(){
 		int index = 0;
 		int questionTime = this.getQuestionTime(index);
